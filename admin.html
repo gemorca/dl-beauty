@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fffaf0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Admin | DL BEAUTY</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <img id="brandLogo" class="brand-logo" src="assets/logo.jpeg" alt="">
+      <span id="brandName" class="brand-name">DL BEAUTY</span>
+    </div>
+    <div class="topbar-actions">
+      <button id="soundBtn" class="btn" type="button" aria-pressed="false" hidden>Suara mati</button>
+      <button id="logoutBtn" class="btn" type="button" hidden>Keluar</button>
+    </div>
+  </header>
+
+  <div id="tabsHost"></div>
+
+  <main class="container admin" id="app">
+    <p class="state">Memuat…</p>
+  </main>
+
+  <dialog id="confirmDialog" class="sheet" aria-labelledby="confirmTitle"></dialog>
+  <div id="toast" class="toast" role="status" hidden></div>
+
+  <script type="module" src="js/admin.js"></script>
+</body>
+</html>

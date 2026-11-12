@@ -1,0 +1,89 @@
+/* Halaman admin. Memakai token warna dan komponen dari style.css. */
+
+.admin { padding-top: 20px; padding-bottom: 48px; }
+.page-title { margin: 0 0 4px; font-family: var(--serif); font-weight: 600; font-size: 28px; color: var(--brown-deep); }
+
+/* Login */
+.login-card { max-width: 380px; margin: 40px auto 0; padding: 24px 22px; background: var(--surface); border: 1px solid var(--line); border-radius: 24px; }
+.login-title { margin-bottom: 8px; font-size: 26px; }
+.login-card .form-error { margin-top: 10px; }
+
+/* Tab: tombol, bukan tautan */
+.tab { font-family: var(--sans); }
+.tab .badge { margin-left: 8px; letter-spacing: 0; }
+
+/* Kartu statistik */
+.stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 14px; }
+@media (min-width: 720px) { .stats { grid-template-columns: repeat(4, 1fr); gap: 14px; } }
+.stat { display: flex; flex-direction: column; gap: 4px; min-width: 0; padding: 14px 16px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.stat-label { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.stat-val { font-family: var(--serif); font-weight: 600; font-size: 24px; line-height: 1.15; color: var(--brown); overflow-wrap: anywhere; }
+.updated { margin: 0 0 12px; font-size: 12px; }
+
+/* Papan pesanan */
+.board { display: grid; grid-template-columns: 1fr; gap: 22px; align-items: start; }
+@media (min-width: 900px) { .board { grid-template-columns: repeat(3, 1fr); gap: 16px; } }
+.col { min-width: 0; }
+.col-head { display: flex; align-items: center; justify-content: space-between; margin: 0 0 10px; font-family: var(--serif); font-weight: 600; font-size: 19px; color: var(--brown-deep); }
+.col-count { display: inline-grid; place-items: center; min-width: 26px; height: 26px; padding: 0 8px; border-radius: 999px; background: var(--tint); color: var(--brown); font: 600 13px/1 var(--sans); }
+.col .empty { padding: 18px 14px; border: 1.5px dashed var(--line); border-radius: var(--radius); text-align: center; }
+.col .btn-block { margin-bottom: 0; }
+
+.ocard { margin-bottom: 10px; padding: 14px 16px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.ocard-head { display: flex; justify-content: space-between; gap: 10px; }
+.ocard-head strong { min-width: 0; overflow-wrap: anywhere; }
+.ocard-time { flex: none; color: var(--muted); font-size: 13px; }
+.ocard-tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+.ocard-items { margin: 0; padding: 0; list-style: none; }
+.ocard-items li { padding: 2px 0; overflow-wrap: anywhere; }
+.ocard-total { margin: 8px 0 0; font-weight: 600; color: var(--brown); }
+.ocard-line { margin: 8px 0 0; font-size: 14px; overflow-wrap: anywhere; white-space: pre-line; }
+.ocard-key { display: block; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.ocard-hint { margin: 8px 0 0; color: var(--muted); font-size: 13px; }
+.ocard-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+
+.btn-sm { min-height: 40px; padding: 0 14px; font-size: 13px; }
+.btn-danger { border-color: #c47a7a; color: #a02323; }
+.btn-danger:hover { background: #fff0f0; }
+.btn-danger-solid { background: #a02323; border-color: #a02323; }
+.btn-danger-solid:hover { background: #7d1a1a; }
+.confirm-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
+
+/* Lencana status */
+.tag { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 999px; background: var(--tint); color: var(--brown); font-size: 12px; font-weight: 600; white-space: nowrap; }
+.tag-pembayaran, .tag-dipesan { background: #fff1cf; color: #7a5200; }
+.tag-dikemas { background: #e6efe2; color: #2f5a1f; }
+.tag-dikirim { background: #dcebdc; color: #1f5a2a; }
+.tag-dibatalkan { background: #f9e2e2; color: #8c2020; }
+
+/* Transaksi */
+.seg { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+.seg-btn { min-height: 40px; padding: 0 16px; border: 1.5px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--muted); font: 600 13px/1 var(--sans); cursor: pointer; }
+.seg-btn:hover { border-color: var(--gold); color: var(--brown); }
+.seg-btn.is-on { border-color: var(--brown); background: var(--brown); color: #fff; }
+
+.recap { display: grid; grid-template-columns: 1fr; gap: 14px; margin-bottom: 14px; }
+@media (min-width: 720px) { .recap { grid-template-columns: 1fr 1fr; } }
+.tbl { width: 100%; margin-bottom: 14px; border-collapse: collapse; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; font-size: 14px; }
+.recap .tbl { margin-bottom: 0; }
+.tbl caption { padding: 0 2px 8px; text-align: left; font-family: var(--serif); font-weight: 600; font-size: 17px; color: var(--brown-deep); caption-side: top; }
+.tbl th, .tbl td { padding: 10px 12px; border-top: 1px solid var(--line); text-align: left; font-weight: 400; overflow-wrap: anywhere; }
+.tbl thead th { border-top: 0; background: var(--tint); color: var(--muted); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; font-weight: 600; }
+.tbl tbody th { font-weight: 500; }
+.tbl .num { text-align: right; white-space: nowrap; }
+
+.day { margin-top: 18px; }
+.day-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; margin: 0 0 8px; font-family: var(--serif); font-weight: 600; font-size: 18px; color: var(--brown-deep); }
+.day-sum { font: 500 13px/1.6 var(--sans); color: var(--muted); }
+.trow { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; align-items: center; padding: 10px 14px; margin-bottom: 6px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; }
+.trow-main { grid-column: 1; font-weight: 500; overflow-wrap: anywhere; }
+.trow-meta { grid-column: 1; color: var(--muted); font-size: 13px; }
+.trow .tag { grid-column: 2; grid-row: 1; justify-self: end; }
+.trow-total { grid-column: 2; grid-row: 2; justify-self: end; font-weight: 600; color: var(--brown); }
+.plain { margin: 0; padding: 0; list-style: none; color: var(--muted); }
+.plain li { padding: 4px 0; }
+
+@media (max-width: 420px) {
+  .stat-val { font-size: 20px; }
+  .page-title { font-size: 25px; }
+}

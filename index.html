@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fffaf0">
+  <title>DL BEAUTY</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="Beranda">
+      <img id="brandLogo" class="brand-logo" src="assets/logo.jpeg" alt="">
+      <span id="brandName" class="brand-name">DL BEAUTY</span>
+    </a>
+    <div class="topbar-actions">
+      <button id="cartBtn" class="btn" type="button" aria-label="Buka keranjang">
+        Keranjang <span id="cartBadge" class="badge" hidden>0</span>
+      </button>
+      <a id="chatAdmin" class="btn btn-solid" target="_blank" rel="noopener" aria-label="Chat Admin" hidden>Chat<span class="hide-sm">&nbsp;Admin</span></a>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero container">
+      <img id="banner" class="hero-img" src="assets/banner.jpeg" alt="Banner toko">
+    </section>
+
+    <nav class="tabs" aria-label="Kategori">
+      <div class="container tabs-inner" id="tabs"></div>
+    </nav>
+
+    <div class="container" id="content" aria-live="polite">
+      <div class="grid" aria-hidden="true">
+        <div class="card skeleton"></div><div class="card skeleton"></div>
+        <div class="card skeleton"></div><div class="card skeleton"></div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer container">
+    <p id="footerText"></p>
+  </footer>
+
+  <dialog id="cartDialog" class="sheet" aria-labelledby="cartTitle"></dialog>
+
+  <div id="toast" class="toast" role="status" hidden></div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
