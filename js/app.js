@@ -253,8 +253,8 @@ function initSearch() {
     input.focus();
   });
   clear.textContent = '\u00d7';
-  document.querySelector('nav.tabs').before(
-    h('div', { class: 'container search' }, h('div', { class: 'search-box' }, input, clear), info));
+  $('searchSlot').replaceChildren(h('div', { class: 'search-box' }, input, clear));
+  document.querySelector('nav.tabs').before(h('div', { class: 'container search' }, info));
 }
 
 /* ---------- Render ---------- */

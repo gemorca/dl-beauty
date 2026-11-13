@@ -3,19 +3,20 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#fffaf0">
+  <meta name="theme-color" content="#faf7f2">
   <title>DL BEAUTY</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
-  <header class="topbar">
+<body class="shop">
+  <header class="topbar has-search">
     <a class="brand" href="./" aria-label="Beranda">
       <img id="brandLogo" class="brand-logo" src="assets/logo.jpeg" alt="">
       <span id="brandName" class="brand-name">DL BEAUTY</span>
     </a>
+    <div id="searchSlot" class="topbar-search"></div>
     <div class="topbar-actions">
       <button id="musicBtn" class="btn btn-icon" type="button" aria-pressed="false">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
@@ -33,8 +34,12 @@
         </svg>
         <span class="btn-label hide-sm">Riwayat</span>
       </button>
-      <button id="cartBtn" class="btn" type="button" aria-label="Buka keranjang">
-        Keranjang <span id="cartBadge" class="badge" hidden>0</span>
+      <button id="cartBtn" class="btn btn-icon cart-btn" type="button" aria-label="Buka keranjang">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+          <path d="M5 8h14l-1 12H6L5 8z"/>
+          <path d="M9 8V6a3 3 0 0 1 6 0v2"/>
+        </svg>
+        <span id="cartBadge" class="badge" hidden>0</span>
       </button>
       <a id="chatAdmin" class="btn btn-solid" target="_blank" rel="noopener" aria-label="Chat Admin" hidden>Chat<span class="hide-sm">&nbsp;Admin</span></a>
     </div>
