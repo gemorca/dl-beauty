@@ -333,7 +333,11 @@ function orderCard(o, hariIni, isNew) {
       h('strong', null, '#' + o.id + ' · ' + o.nama),
       h('span', { class: 'ocard-time' }, waktuText(o, hariIni))
     ),
-    h('div', { class: 'ocard-tags' }, h('span', { class: 'tag' }, CARA_LABEL[o.cara_terima] || o.cara_terima), tag(o.status)),
+    h('div', { class: 'ocard-tags' },
+      h('span', { class: 'tag' }, CARA_LABEL[o.cara_terima] || o.cara_terima),
+      // Cara bayar yang dipilih pelanggan (QRIS atau nama bank); sebelum memilih, nilainya belum berarti.
+      o.cara_terima === 'antar' && o.cara_bayar && o.status !== 'DIPESAN' ? h('span', { class: 'tag' }, o.cara_bayar) : null,
+      tag(o.status)),
     h('ul', { class: 'ocard-items' }, (o.items || []).map((it) => h('li', null, it.jumlah + '× ' + it.nama))),
     h('p', { class: 'ocard-total' }, rupiah(o.total)),
     detail,

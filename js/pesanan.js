@@ -1,5 +1,5 @@
 import { fetchBootstrap, readCache, getOrder, choosePayment, submitReview } from './api.js';
-import { h, rupiah, waLink, stars, tanggal, fotoUrl } from './util.js';
+import { h, rupiah, waLink, stars, tanggal, fotoUrl, parseRekening } from './util.js';
 import { toast as showToast, setLoading } from './ui.js';
 import { skPesanan } from './skeleton.js';
 
@@ -110,27 +110,65 @@ function qrisScreen(o) {
   );
 }
 
+// Layar bayar transfer bank: bank, nomor, atas nama, total, dan tombol salin nomor.
+async function salinNomor(nomor) {
+  try {
+    await navigator.clipboard.writeText(nomor.replace(/\D/g, ''));
+    toast('Nomor rekening disalin');
+  } catch (e) {
+    toast('Gagal menyalin. Salin nomornya secara manual.');
+  }
+}
+
+function bankScreen(o) {
+  const rek = parseRekening(pengaturan.rekening).find((r) => r.bank === o.cara_bayar);
+  const kv = (k, v, cls) => h('div', { class: 'kv-row' }, h('dt', null, k), h('dd', { class: cls || null }, v));
+  return h('section', { class: 'panel bank', 'aria-labelledby': 'bankTitle' },
+    h('h2', { id: 'bankTitle', class: 'panel-title' }, 'Transfer ke ' + o.cara_bayar),
+    rek
+      ? h('dl', { class: 'kv' },
+        kv('Bank', rek.bank),
+        kv('Nomor rekening', rek.nomor, 'kv-big'),
+        kv('Atas nama', rek.atas_nama),
+        kv('Total', rupiah(o.total), 'kv-big'))
+      : h('p', { class: 'muted' }, 'Data rekening ' + o.cara_bayar + ' tidak ditemukan. Hubungi admin lewat WhatsApp untuk pembayaran.'),
+    rek ? h('button', { class: 'btn btn-block', type: 'button', onclick: () => salinNomor(rek.nomor) }, 'Salin nomor') : null,
+    h('p', { class: 'muted' }, 'Setelah transfer, admin akan mengonfirmasi pesanan kamu.')
+  );
+}
+
 function statusPanel(o) {
-  if (o.status === 'PEMBAYARAN' && o.cara_terima === 'antar') return qrisScreen(o);
+  // cara_bayar kosong = data lama sebelum ada pilihan bank: tetap QRIS.
+  if (o.status === 'PEMBAYARAN' && o.cara_terima === 'antar') {
+    return !o.cara_bayar || o.cara_bayar === 'QRIS' ? qrisScreen(o) : bankScreen(o);
+  }
 
   const kids = [h('p', { class: 'status-text' }, statusText(o))];
   if (o.status === 'DIPESAN' && o.cara_terima === 'antar') {
-    const btn = h('button', { class: 'btn btn-solid btn-block', type: 'button' }, 'Bayar dengan QRIS');
-    btn.addEventListener('click', async () => {
-      if (busy) return;
-      busy = true;
-      setLoading(btn, true, 'Memproses…');
-      try {
-        order = await choosePayment(params.id, params.token);
-        render();
-      } catch (e) {
-        toast((e && e.message) || 'Gagal memilih cara bayar.');
-        setLoading(btn, false, 'Bayar dengan QRIS');
-      } finally {
-        busy = false;
-      }
+    // Satu tombol per metode: QRIS dulu, lalu tiap bank dari pengaturan.rekening (kosong = hanya QRIS).
+    const metode = ['QRIS'].concat(parseRekening(pengaturan.rekening).map((r) => r.bank));
+    const btns = metode.map((m) => {
+      const label = m === 'QRIS' ? 'Bayar dengan QRIS' : 'Transfer ' + m;
+      const btn = h('button', { class: 'btn btn-block' + (m === 'QRIS' ? ' btn-solid' : ''), type: 'button' }, label);
+      btn.addEventListener('click', async () => {
+        if (busy) return;
+        busy = true;
+        btns.forEach((b) => { b.disabled = true; });
+        setLoading(btn, true, 'Memproses…');
+        try {
+          order = await choosePayment(params.id, params.token, m);
+          render();
+        } catch (e) {
+          toast((e && e.message) || 'Gagal memilih cara bayar.');
+          btns.forEach((b) => { b.disabled = false; });
+          setLoading(btn, false, label);
+        } finally {
+          busy = false;
+        }
+      });
+      return btn;
     });
-    kids.push(btn);
+    kids.push(...btns);
   }
   return h('section', { class: 'panel' + (o.status === 'DIBATALKAN' ? ' panel-cancel' : '') }, kids);
 }
@@ -237,7 +275,7 @@ function contactButton(o) {
 /* ---------- Render ---------- */
 function render() {
   if (!order) return;
-  const key = JSON.stringify([order, pengaturan.qris_url, pengaturan.wa_admin, pengaturan.alamat, pengaturan.nama_toko]);
+  const key = JSON.stringify([order, pengaturan.qris_url, pengaturan.rekening, pengaturan.wa_admin, pengaturan.alamat, pengaturan.nama_toko]);
   if (key === lastRendered) return;
   lastRendered = key;
 

@@ -172,3 +172,6 @@ select.input { appearance: auto; }
   .invoice-dialog::backdrop { display: none; }
   .invoice-dialog .sheet-inner { max-height: none; overflow: visible; padding: 0; }
 }
+
+/* Kolom rekening bank (form tampilan toko) */
+#tf-rek { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 13px; }

@@ -22,6 +22,15 @@ export function waLink(number, text) {
   return 'https://wa.me/' + d + (text ? '?text=' + encodeURIComponent(text) : '');
 }
 
+// Teks rekening (satu baris per bank: BANK|NOMOR|ATAS NAMA) -> [{bank, nomor, atas_nama}].
+// Sama dengan parseRekening_ di server; baris yang formatnya rusak dilewati.
+export function parseRekening(teks) {
+  return String(teks || '').split(/\r?\n/)
+    .map((baris) => baris.split('|').map((s) => s.trim()))
+    .filter((p) => p.length === 3 && p[0] && p[1] && p[2])
+    .map((p) => ({ bank: p[0], nomor: p[1], atas_nama: p[2] }));
+}
+
 export function slug(s) {
   return String(s).toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'lain';
 }

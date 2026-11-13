@@ -1,10 +1,11 @@
 import { CONFIG } from './config.js';
 import { track } from './progress.js';
+import { parseRekening } from './util.js';
 
 const KEY = 'dlbeauty_bootstrap_v2';
 
 export const CARA_DEFAULT = [
-  { kode: 'antar', label: 'Antar ke rumah', desc: 'Dikirim ke alamatmu, bayar lewat QRIS', butuh_alamat: true },
+  { kode: 'antar', label: 'Antar ke rumah', desc: 'Dikirim ke alamatmu, bayar lewat QRIS atau transfer bank', butuh_alamat: true },
   { kode: 'ambil', label: 'Ambil di tempat', desc: '', butuh_alamat: false },
   { kode: 'cod', label: 'COD', desc: 'Ketemuan di titik yang disepakati, bayar tunai saat barang diterima', butuh_alamat: true }
 ];
@@ -15,7 +16,8 @@ const DEMO = {
     tagline: 'Body Booster Whitening Dosting',
     alamat: '',
     wa_admin: '08532459400',
-    logo_url: '', banner_url: '', qris_url: ''
+    logo_url: '', banner_url: '', qris_url: '',
+    rekening: 'BCA|1234567890|DL BEAUTY\nBRI|0987654321|DL BEAUTY' // contoh untuk mode demo
   },
   kategori: ['body booster', 'paket hemat'],
   cara_terima: CARA_DEFAULT,
@@ -127,18 +129,21 @@ export async function getOrder(id, token) {
   return post('getOrder', { id, token }, 'Gagal memuat pesanan.');
 }
 
-// Pelanggan memilih bayar lewat QRIS (DIPESAN -> PEMBAYARAN).
-async function choosePaymentImpl(id, token) {
+// Pelanggan memilih cara bayar: 'QRIS' atau nama bank (DIPESAN -> PEMBAYARAN).
+async function choosePaymentImpl(id, token, metode) {
   if (!CONFIG.API_URL) {
     await wait(250);
+    if (metode !== 'QRIS' && !parseRekening(DEMO.pengaturan.rekening).some((r) => r.bank === metode)) {
+      throw new Error('Metode bayar tidak valid.');
+    }
     const list = demoLoad();
     const o = demoFind(list, { id, token });
     if (o.cara_terima !== 'antar') throw new Error('Pesanan ini dibayar langsung, tidak lewat QRIS.');
-    if (o.status === 'DIPESAN') { o.status = 'PEMBAYARAN'; demoSave(list); }
+    if (o.status === 'DIPESAN') { o.status = 'PEMBAYARAN'; o.cara_bayar = metode; demoSave(list); }
     else if (o.status !== 'PEMBAYARAN') throw new Error('Status pesanan sudah ' + o.status + '. Pilihan bayar tidak bisa diubah.');
     return o;
   }
-  return post('choosePayment', { id, token }, 'Gagal memilih cara bayar.');
+  return post('choosePayment', { id, token, metode }, 'Gagal memilih cara bayar.');
 }
 
 async function submitReviewImpl(id, token, bintang, komentar) {
@@ -157,5 +162,5 @@ async function submitReviewImpl(id, token, bintang, komentar) {
 
 // Tulis (create/update) tampil dengan progress bar atas layar. Baca (getOrder, bootstrap) tidak.
 export const createOrder = (payload) => track(() => createOrderImpl(payload));
-export const choosePayment = (id, token) => track(() => choosePaymentImpl(id, token));
+export const choosePayment = (id, token, metode) => track(() => choosePaymentImpl(id, token, metode));
 export const submitReview = (id, token, bintang, komentar) => track(() => submitReviewImpl(id, token, bintang, komentar));

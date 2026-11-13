@@ -500,3 +500,6 @@ body:has(.wa-float:not([hidden])) .footer { padding-bottom: 96px; }
   .panel { break-inside: avoid; }
   .is-enter > .panel { opacity: 1; animation: none; }
 }
+
+/* Layar bayar transfer bank */
+.kv-big { font-size: 18px; font-weight: 600; letter-spacing: .02em; color: var(--brown); }

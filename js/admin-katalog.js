@@ -348,6 +348,7 @@ export function mountKatalog(ctx) {
     const nama = h('input', { id: 'tf-nama', class: 'input', type: 'text', maxlength: '40', autocomplete: 'off', value: p.nama_toko || '' });
     const tagline = h('input', { id: 'tf-tag', class: 'input', type: 'text', maxlength: '120', autocomplete: 'off', value: p.tagline || '' });
     const alamat = h('textarea', { id: 'tf-alamat', class: 'input', maxlength: '200', rows: '3' }, p.alamat || '');
+    const rekening = h('textarea', { id: 'tf-rek', class: 'input', maxlength: '800', rows: '4', placeholder: 'BCA|1234567890|DL BEAUTY' }, p.rekening || '');
     const wa = h('input', { id: 'tf-wa', class: 'input', type: 'tel', inputmode: 'tel', maxlength: '20', autocomplete: 'off', value: p.wa_admin || '' });
 
     const strip = {
@@ -424,6 +425,8 @@ export function mountKatalog(ctx) {
       imgBlock('logo', 'Logo', 'Dipotong jadi persegi di tengah. Kosong = memakai logo bawaan.', 200, 'assets/logo.jpeg'),
       imgBlock('banner', 'Banner', 'Gambar lebar di atas halaman toko. Kosong = memakai banner bawaan.', 1200, 'assets/banner.jpeg'),
       imgBlock('qris', 'Gambar QRIS', 'Ditampilkan ke pelanggan saat bayar. Pastikan kodenya jelas dan tidak terpotong. Kosong = pelanggan belum bisa membayar lewat QRIS.', 800, ''),
+      h('label', { for: 'tf-rek', class: 'label' }, 'Rekening bank'), rekening,
+      h('p', { class: 'muted field-hint' }, 'Satu baris per bank, format BANK|NOMOR|ATAS NAMA. Contoh: BCA|1234567890|DL BEAUTY. Maksimal 6 baris. Kosong = pelanggan hanya bisa bayar lewat QRIS.'),
       sb.el, err, simpan);
 
     form.addEventListener('submit', async (ev) => {
@@ -452,12 +455,13 @@ export function mountKatalog(ctx) {
         simpan.textContent = 'Menyimpan…';
         const res = await adminSaveSettings({
           nama_toko: nama.value, tagline: tagline.value, alamat: alamat.value, wa_admin: wa.value,
-          logo_url: urls.logo, banner_url: urls.banner, qris_url: urls.qris
+          logo_url: urls.logo, banner_url: urls.banner, qris_url: urls.qris, rekening: rekening.value
         });
         if (!alive) return;
         cat = res;
         ['logo', 'banner', 'qris'].forEach((k) => { lepasPending(st[k]); st[k].url = res.pengaturan[k + '_url'] || ''; blocks[k](); });
         wa.value = res.pengaturan.wa_admin || wa.value;
+        rekening.value = res.pengaturan.rekening || '';
         if (onSettings) onSettings(res.pengaturan);
         toast('Tampilan disimpan');
       } catch (e) {
