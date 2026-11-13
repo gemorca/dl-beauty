@@ -3,7 +3,7 @@ import { readCache } from './api.js';
 import { session, adminLogin, adminLogout, adminOrders, adminSetStatus } from './admin-api.js';
 import { mountKatalog } from './admin-katalog.js';
 import { mountKeuangan } from './admin-keuangan.js';
-import { toast as showToast, setLoading } from './ui.js';
+import { toast as showToast, setLoading, bindDialog, closeDialog, createSeen } from './ui.js';
 import { skBoard, skTransaksi } from './skeleton.js';
 
 const $ = (id) => document.getElementById(id);
@@ -39,6 +39,7 @@ let audio = null;
 let ui = null;
 let katalog = null;
 let keu = null;
+const seenOrders = createSeen();
 
 /* ---------- Util ---------- */
 const toast = (msg) => showToast(msg, 3200);
@@ -110,8 +111,8 @@ function confirmDialog(title, text, okLabel) {
       h('h2', { id: 'confirmTitle', class: 'sheet-title' }, title),
       h('p', { class: 'muted' }, text),
       h('div', { class: 'confirm-actions' },
-        h('button', { class: 'btn', type: 'button', onclick: () => dlg.close() }, 'Kembali'),
-        h('button', { class: 'btn btn-solid btn-danger-solid', type: 'button', onclick: () => { answer = true; dlg.close(); } }, okLabel)
+        h('button', { class: 'btn', type: 'button', onclick: () => closeDialog(dlg) }, 'Kembali'),
+        h('button', { class: 'btn btn-solid btn-danger-solid', type: 'button', onclick: () => { answer = true; closeDialog(dlg); } }, okLabel)
       )
     ));
     dlg.addEventListener('close', () => resolve(answer), { once: true });
@@ -127,6 +128,7 @@ function renderLogin(msg) {
   if (keu) keu.reset();
   keu = null;
   data = null; ui = null; lastKey = ''; prevNeed = null; busy = false;
+  seenOrders.reset();
   $('tabsHost').replaceChildren();
   $('soundBtn').hidden = true;
   $('logoutBtn').hidden = true;
@@ -271,7 +273,7 @@ function tag(status) {
   return h('span', { class: 'tag tag-' + status.toLowerCase() }, STATUS_LABEL[status] || status);
 }
 
-function orderCard(o, hariIni) {
+function orderCard(o, hariIni, isNew) {
   const wa = waLink(o.wa, 'Halo ' + o.nama + ', ini admin DL BEAUTY soal pesanan #' + o.id + '.');
   const detail = [];
   if (o.alamat) detail.push(h('p', { class: 'ocard-line' }, h('span', { class: 'ocard-key' }, o.cara_terima === 'cod' ? 'Titik temu' : 'Alamat'), o.alamat));
@@ -286,7 +288,7 @@ function orderCard(o, hariIni) {
   }, actionLabel(o, ke)));
   if (wa) actions.push(h('a', { class: 'btn btn-sm', href: wa, target: '_blank', rel: 'noopener' }, 'Chat'));
 
-  return h('article', { class: 'ocard', 'data-id': String(o.id) },
+  return h('article', { class: 'ocard' + (isNew ? ' is-new' : ''), 'data-id': String(o.id) },
     h('div', { class: 'ocard-head' },
       h('strong', null, '#' + o.id + ' · ' + o.nama),
       h('span', { class: 'ocard-time' }, waktuText(o, hariIni))
@@ -328,6 +330,9 @@ async function doAction(o, ke, btn) {
 function renderPesanan(d) {
   const orders = d.orders;
   const today = orders.filter((o) => o.hari === d.hari_ini && o.status !== 'DIBATALKAN');
+  // Animasi hanya untuk pesanan yang baru muncul setelah pemuatan pertama.
+  const seen = seenOrders.update(orders.map((o) => o.id));
+  const fresh = seen.first ? new Set() : seen.added;
   const need = orders.filter((o) => NEED.includes(o.status));
   const kemas = orders.filter((o) => o.status === 'DIKEMAS');
   const riwayat = orders.filter((o) => o.status === 'DIKIRIM' || o.status === 'DIBATALKAN');
@@ -345,7 +350,7 @@ function renderPesanan(d) {
 
   const col = (title, list, empty, extra) => h('section', { class: 'col', 'aria-label': title },
     h('h2', { class: 'col-head' }, title, h('span', { class: 'col-count' }, String(list.length))),
-    list.length ? list.map((o) => orderCard(o, d.hari_ini)) : h('p', { class: 'empty' }, empty),
+    list.length ? list.map((o) => orderCard(o, d.hari_ini, fresh.has(o.id))) : h('p', { class: 'empty' }, empty),
     extra || null
   );
 
@@ -520,6 +525,8 @@ async function init() {
   if (c && c.pengaturan) {
     if (c.pengaturan.nama_toko) $('brandName').textContent = c.pengaturan.nama_toko;
   }
+  bindDialog($('confirmDialog'));
+  bindDialog($('formDialog'));
   $('soundBtn').addEventListener('click', toggleSound);
   $('logoutBtn').addEventListener('click', logout);
   // Browser baru mengizinkan suara setelah ada interaksi pengguna.

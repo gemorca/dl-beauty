@@ -7,7 +7,7 @@ import {
   adminSaveCategories, adminSaveSettings, adminUploadImage
 } from './admin-api.js';
 import { kompres, keBase64 } from './admin-gambar.js';
-import { setLoading } from './ui.js';
+import { setLoading, closeDialog } from './ui.js';
 import { createStepbar } from './progress.js';
 import { skProduk, skKategori, skTampilan } from './skeleton.js';
 
@@ -205,7 +205,7 @@ export function mountKatalog(ctx) {
     paintFoto();
 
     const sb = createStepbar();
-    const batal = h('button', { class: 'btn', type: 'button', onclick: () => formDialog.close() }, 'Batal');
+    const batal = h('button', { class: 'btn', type: 'button', onclick: () => closeDialog(formDialog) }, 'Batal');
     const simpan = h('button', { class: 'btn btn-solid', type: 'submit', disabled: !adaKategori }, 'Simpan');
 
     const form = h('form', { novalidate: true },
@@ -248,7 +248,7 @@ export function mountKatalog(ctx) {
         });
         if (!alive) return;
         cat = res;
-        formDialog.close();
+        closeDialog(formDialog);
         renderProduk();
         renderKategori();
         toast(edit ? 'Produk disimpan' : 'Produk ditambahkan');
@@ -265,7 +265,7 @@ export function mountKatalog(ctx) {
     formDialog.replaceChildren(h('div', { class: 'sheet-inner' },
       h('div', { class: 'sheet-head' },
         h('h2', { id: 'formTitle', class: 'sheet-title' }, edit ? 'Edit produk' : 'Tambah produk'),
-        h('button', { class: 'icon-btn', type: 'button', 'aria-label': 'Tutup', onclick: () => formDialog.close() }, '\u00d7')),
+        h('button', { class: 'icon-btn', type: 'button', 'aria-label': 'Tutup', onclick: () => closeDialog(formDialog) }, '\u00d7')),
       form));
     formDialog.addEventListener('close', () => lepasPending(foto), { once: true });
     formDialog.showModal();

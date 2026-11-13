@@ -1,7 +1,7 @@
 import { cart, MAX_QTY } from './cart.js';
 import { createOrder, CARA_DEFAULT } from './api.js';
 import { h, rupiah } from './util.js';
-import { setLoading } from './ui.js';
+import { setLoading, bindDialog, closeDialog } from './ui.js';
 
 const PROFILE_KEY = 'dlbeauty_profile_v1';
 const ORDERS_KEY = 'dlbeauty_orders_v1';
@@ -15,7 +15,8 @@ let leaving = false;
 
 export function initCheckout() {
   dlg = document.getElementById('cartDialog');
-  dlg.addEventListener('click', (e) => { if (e.target === dlg) dlg.close(); });
+  bindDialog(dlg);
+  dlg.addEventListener('click', (e) => { if (e.target === dlg) closeDialog(dlg); });
   dlg.addEventListener('close', () => { if (unsub) { unsub(); unsub = null; } });
   // Kembali lewat tombol Back (bfcache): status kirim dari halaman sebelumnya harus dibuang.
   window.addEventListener('pageshow', (e) => { if (e.persisted) { leaving = false; busy = false; } });
@@ -46,7 +47,7 @@ function shell(title, ...body) {
   return [
     h('div', { class: 'sheet-head' },
       h('h2', { id: 'cartTitle', class: 'sheet-title' }, title),
-      h('button', { class: 'icon-btn', type: 'button', 'aria-label': 'Tutup', onclick: () => dlg.close() }, '\u00d7')
+      h('button', { class: 'icon-btn', type: 'button', 'aria-label': 'Tutup', onclick: () => closeDialog(dlg) }, '\u00d7')
     ),
     ...body
   ];

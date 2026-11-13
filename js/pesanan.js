@@ -18,6 +18,7 @@ let order = null;
 let lastRendered = '';
 let busy = false;
 let timer = 0;
+let shown = false;
 
 /* ---------- Util ---------- */
 const toast = (msg) => showToast(msg, 2600);
@@ -239,6 +240,9 @@ function render() {
   if (key === lastRendered) return;
   lastRendered = key;
 
+  // Animasi masuk hanya saat tampil pertama; render ulang karena polling tidak mengulangnya.
+  $('view').classList.toggle('is-enter', !shown);
+  shown = true;
   document.title = 'Pesanan #' + order.id + ' | ' + (pengaturan.nama_toko || 'DL BEAUTY');
   const cancelled = order.status === 'DIBATALKAN';
   // replaceChildren(null) akan menulis teks "null"; kartu yang tidak ada dibuang dulu.

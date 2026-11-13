@@ -3,12 +3,22 @@ import { h, rupiah, waLink, slug, stars, tanggal, fotoUrl, shimmerOnLoad } from 
 import { cart, MAX_QTY } from './cart.js';
 import { initCheckout, setCheckoutData, openCheckout } from './checkout.js';
 import { initAudio, playSfx } from './suara.js';
-import { toast as showToast, bindDialog, closeDialog } from './ui.js';
+import { toast as showToast, bindDialog, closeDialog, createSeen } from './ui.js';
 
 const $ = (id) => document.getElementById(id);
 let observer = null;
 let lastRendered = '';
 let query = '';
+let enter = new Set();
+let reviewsShown = false;
+const seenProducts = createSeen();
+const revealObs = new IntersectionObserver((list) => {
+  list.forEach((en) => {
+    if (!en.isIntersecting) return;
+    en.target.classList.add('is-in');
+    revealObs.unobserve(en.target);
+  });
+}, { rootMargin: '0px 0px -8% 0px' });
 let tabEntries = [];
 let searchUi = null;
 
@@ -37,7 +47,7 @@ function applySettings(p) {
 }
 
 /* ---------- Produk ---------- */
-function productCard(p) {
+function productCard(p, step) {
   const src = fotoUrl(p.foto);
   const img = src ? h('img', { src, alt: '', loading: 'lazy', decoding: 'async' }) : null;
   const media = h('button', {
@@ -53,8 +63,8 @@ function productCard(p) {
     onclick: (ev) => addToCart(p, ev.currentTarget)
   }, p.habis ? 'Habis' : 'Tambah');
 
-  return h('article', {
-    class: 'card' + (p.habis ? ' is-sold' : ''),
+  const card = h('article', {
+    class: 'card' + (p.habis ? ' is-sold' : '') + (step >= 0 ? ' is-enter' : ''),
     'data-q': normQ([p.nama, p.kategori, p.deskripsi].join(' '))
   },
     media,
@@ -62,6 +72,8 @@ function productCard(p) {
     h('p', { class: 'card-price' }, rupiah(p.harga)),
     btn
   );
+  if (step >= 0) card.style.setProperty('--i', String(step));
+  return card;
 }
 
 /* ---------- Detail produk ---------- */
@@ -99,9 +111,10 @@ function openDetail(p) {
 }
 
 function productSection(id, title, items) {
+  let k = 0; // urutan stagger hanya untuk kartu yang baru
   return h('section', { class: 'section', id, 'data-kat': '1' },
     h('h2', { class: 'section-title' }, title),
-    h('div', { class: 'grid' }, items.map(productCard))
+    h('div', { class: 'grid' }, items.map((p) => productCard(p, enter.has(String(p.id)) ? Math.min(k++, 7) : -1)))
   );
 }
 
@@ -253,6 +266,7 @@ function render(data) {
   const entries = shown.map((g) => ({ id: 'kat-' + slug(g.nama), label: g.nama }));
   entries.push({ id: 'ulasan', label: 'Ulasan' });
 
+  enter = seenProducts.update(produk.map((p) => String(p.id))).added;
   const content = $('content');
   const nodes = shown.map((g, i) => productSection(entries[i].id, g.nama, g.items));
   if (!shown.length) nodes.push(h('p', { class: 'state' }, 'Produk belum tersedia.'));
@@ -262,10 +276,27 @@ function render(data) {
 
   buildTabs(entries);
   applyFilter();
+  armReveal();
   if (location.hash) {
     const target = $(location.hash.slice(1));
     if (target) target.scrollIntoView({ block: 'start' });
   }
+}
+
+// Section yang baru dan masih di bawah layar muncul saat di-scroll; yang sudah terlihat langsung jalan.
+function armReveal() {
+  const below = (el) => el.getBoundingClientRect().top > innerHeight * 0.9;
+  document.querySelectorAll('#content [data-kat]').forEach((sec) => {
+    if (!sec.querySelector('.is-enter') || !below(sec)) return;
+    sec.classList.add('reveal');
+    revealObs.observe(sec);
+  });
+  const rev = $('ulasan');
+  if (rev && !reviewsShown && below(rev)) {
+    rev.classList.add('reveal', 'reveal-self');
+    revealObs.observe(rev);
+  }
+  reviewsShown = true;
 }
 
 function renderError(err, hasData) {

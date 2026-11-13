@@ -3,7 +3,7 @@
 // lama tetap tampil selagi memuat), supaya angka selalu sama dengan sheet.
 import { h, rupiah, stars, tanggal } from './util.js';
 import { adminFinance, adminAddExpense, adminReviews, adminDeleteReview } from './admin-api.js';
-import { setLoading } from './ui.js';
+import { setLoading, closeDialog } from './ui.js';
 import { skKeuangan, skUlasan } from './skeleton.js';
 
 const CARA_LABEL = { antar: 'Antar', ambil: 'Ambil', cod: 'COD' };
@@ -115,7 +115,7 @@ export function mountKeuangan(ctx) {
     jumlah.addEventListener('input', () => { jumlah.value = jumlah.value.replace(/\D/g, '').slice(0, 10); paint(); });
     paint();
     const ket = h('input', { id: 'ex-ket', class: 'input', type: 'text', maxlength: '120', autocomplete: 'off', placeholder: 'mis. beli botol, ongkir, iklan' });
-    const batal = h('button', { class: 'btn', type: 'button', onclick: () => formDialog.close() }, 'Batal');
+    const batal = h('button', { class: 'btn', type: 'button', onclick: () => closeDialog(formDialog) }, 'Batal');
     const simpan = h('button', { class: 'btn btn-solid', type: 'submit' }, 'Simpan');
 
     const form = h('form', { novalidate: true },
@@ -139,7 +139,7 @@ export function mountKeuangan(ctx) {
         if (!alive) return;
         fin = res;
         reqId = newReqId();
-        formDialog.close();
+        closeDialog(formDialog);
         renderKeuangan();
         toast('Uang keluar dicatat: ' + rupiah(n));
       } catch (e) {
@@ -154,7 +154,7 @@ export function mountKeuangan(ctx) {
     formDialog.replaceChildren(h('div', { class: 'sheet-inner' },
       h('div', { class: 'sheet-head' },
         h('h2', { id: 'formTitle', class: 'sheet-title' }, 'Catat uang keluar'),
-        h('button', { class: 'icon-btn', type: 'button', 'aria-label': 'Tutup', onclick: () => formDialog.close() }, '\u00d7')),
+        h('button', { class: 'icon-btn', type: 'button', 'aria-label': 'Tutup', onclick: () => closeDialog(formDialog) }, '\u00d7')),
       form));
     formDialog.showModal();
     jumlah.focus();
