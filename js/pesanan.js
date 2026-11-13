@@ -177,7 +177,7 @@ function gantiMetode(o) {
   const toggle = h('button', {
     class: 'btn btn-block', type: 'button', 'aria-expanded': 'false',
     onclick: () => { list.hidden = !list.hidden; toggle.setAttribute('aria-expanded', String(!list.hidden)); }
-  }, 'Ganti metode bayar');
+  }, 'Ubah Metode Pembayaran');
   return h('div', { class: 'ganti' }, toggle, list);
 }
 
