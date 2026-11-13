@@ -113,7 +113,7 @@ function openDetail(p) {
       h('button', { class: 'icon-btn', type: 'button', 'aria-label': 'Tutup', onclick: () => closeDialog(detailDlg) }, '\u00d7')),
     h('p', { class: 'detail-price' }, rupiah(p.harga)),
     h('div', { class: 'detail-media' },
-      src ? h('img', { src, alt: p.nama, decoding: 'async' }) : h('span', { class: 'card-ph', 'aria-hidden': 'true' }, 'DL')),
+      src ? [h('img', { class: 'detail-bg', src, alt: '', 'aria-hidden': 'true', decoding: 'async' }), h('img', { class: 'detail-img', src, alt: p.nama, decoding: 'async' })] : h('span', { class: 'card-ph', 'aria-hidden': 'true' }, 'DL')),
     h('div', { class: 'ocard-tags' },
       p.kategori ? h('span', { class: 'tag' }, p.kategori) : null,
       p.habis ? h('span', { class: 'tag tag-dibatalkan' }, 'Habis') : null),

@@ -401,8 +401,10 @@ body:has(.wa-float:not([hidden])) .footer { padding-bottom: 96px; }
 @media (hover: hover) { .card-name-btn:hover { text-decoration: underline; text-underline-offset: 3px; } }
 .card-open:focus-visible { outline-offset: 3px; }
 
-.detail-media { display: grid; place-items: center; min-height: 160px; margin-bottom: 14px; border-radius: var(--radius); overflow: hidden; background: linear-gradient(160deg, #fff4d6, #f3d890); }
+.detail-media { position: relative; display: grid; place-items: center; min-height: 160px; margin-bottom: 14px; border-radius: var(--radius); overflow: hidden; background: linear-gradient(160deg, #fff4d6, #f3d890); }
 .detail-media img { width: 100%; max-height: 46dvh; object-fit: contain; }
+.detail-media .detail-bg { position: absolute; inset: 0; height: 100%; max-height: none; object-fit: cover; filter: blur(22px) saturate(1.1); transform: scale(1.2); opacity: .85; pointer-events: none; }
+.detail-media .detail-img { position: relative; }
 .detail-media .card-ph { position: static; font-size: 48px; }
 .detail-price { margin: 4px 0 14px; font-family: var(--serif); font-weight: 600; font-size: 34px; line-height: 1.1; color: var(--brown); }
 .detail-desc { margin: 12px 0 0; white-space: pre-line; overflow-wrap: anywhere; }
