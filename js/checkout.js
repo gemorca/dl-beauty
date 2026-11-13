@@ -189,8 +189,12 @@ function renderForm() {
       const res = await createOrder(payload);
       saveJSON(PROFILE_KEY, { nama: v.nama, wa: v.wa, alamat: v.alamat, cara: c.kode });
       const orders = loadJSON(ORDERS_KEY, []);
-      orders.unshift({ id: res.id, token: res.token, waktu: Date.now(), total: res.total });
-      saveJSON(ORDERS_KEY, orders.slice(0, 10));
+      orders.unshift({
+        id: res.id, token: res.token, waktu: Date.now(), total: res.total,
+        cara_terima: c.kode,
+        items: snapshot.map((it) => ({ nama: it.nama, harga: it.harga, jumlah: it.jumlah }))
+      });
+      saveJSON(ORDERS_KEY, orders.slice(0, 30));
       cart.clear();
       // Tombol dibiarkan nonaktif sampai halaman berpindah, supaya tidak terkirim dua kali.
       leaving = true;

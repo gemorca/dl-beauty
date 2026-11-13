@@ -2,6 +2,7 @@ import { fetchBootstrap, readCache } from './api.js';
 import { h, rupiah, waLink, slug, stars, tanggal, fotoUrl, shimmerOnLoad } from './util.js';
 import { cart, MAX_QTY } from './cart.js';
 import { initCheckout, setCheckoutData, openCheckout } from './checkout.js';
+import { openRiwayat } from './riwayat.js';
 import { initAudio, playSfx } from './suara.js';
 import { toast as showToast, bindDialog, closeDialog, createSeen } from './ui.js';
 
@@ -367,6 +368,7 @@ async function init() {
   cart.subscribe(updateBadge);
   updateBadge();
   $('cartBtn').addEventListener('click', openCheckout);
+  $('historyBtn').addEventListener('click', openRiwayat);
   const cached = readCache();
   if (cached) render(cached);
   try {

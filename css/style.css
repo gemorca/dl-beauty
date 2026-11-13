@@ -477,3 +477,12 @@ body:has(.wa-float:not([hidden])) .footer { padding-bottom: 96px; }
   .section.reveal-self { opacity: 1; transform: none; }
   .ocard.is-new::after { display: none; }
 }
+
+/* Riwayat pesanan (dialog di beranda) */
+.riwayat-list { display: grid; }
+.riwayat-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); text-decoration: none; }
+.riwayat-info { display: grid; min-width: 0; }
+.riwayat-id { font-weight: 600; color: var(--brown-deep); }
+.riwayat-date { color: var(--muted); font-size: 13px; }
+.riwayat-total { flex: none; font-weight: 600; color: var(--brown); }
+@media (hover: hover) { .riwayat-row:hover .riwayat-id { text-decoration: underline; text-underline-offset: 3px; } }
