@@ -3,11 +3,14 @@ import { h, rupiah, waLink, slug, stars, tanggal, fotoUrl, shimmerOnLoad } from 
 import { cart, MAX_QTY } from './cart.js';
 import { initCheckout, setCheckoutData, openCheckout } from './checkout.js';
 import { initAudio, playSfx } from './suara.js';
-import { toast as showToast } from './ui.js';
+import { toast as showToast, bindDialog, closeDialog } from './ui.js';
 
 const $ = (id) => document.getElementById(id);
 let observer = null;
 let lastRendered = '';
+let query = '';
+let tabEntries = [];
+let searchUi = null;
 
 /* ---------- Toast ---------- */
 const toast = (msg, action) => showToast(msg, action ? 3500 : 2200, action);
@@ -36,8 +39,11 @@ function applySettings(p) {
 /* ---------- Produk ---------- */
 function productCard(p) {
   const src = fotoUrl(p.foto);
-  const img = src ? h('img', { src, alt: p.nama, loading: 'lazy', decoding: 'async' }) : null;
-  const media = h('div', { class: 'card-media' },
+  const img = src ? h('img', { src, alt: '', loading: 'lazy', decoding: 'async' }) : null;
+  const media = h('button', {
+    class: 'card-media card-open', type: 'button', 'aria-label': 'Lihat detail ' + p.nama,
+    onclick: () => openDetail(p)
+  },
     img || h('span', { class: 'card-ph', 'aria-hidden': 'true' }, 'DL'),
     p.habis ? h('span', { class: 'badge-sold' }, 'HABIS') : null
   );
@@ -47,16 +53,53 @@ function productCard(p) {
     onclick: (ev) => addToCart(p, ev.currentTarget)
   }, p.habis ? 'Habis' : 'Tambah');
 
-  return h('article', { class: 'card' + (p.habis ? ' is-sold' : '') },
+  return h('article', {
+    class: 'card' + (p.habis ? ' is-sold' : ''),
+    'data-q': normQ([p.nama, p.kategori, p.deskripsi].join(' '))
+  },
     media,
-    h('h3', { class: 'card-name' }, p.nama),
+    h('h3', { class: 'card-name' }, h('button', { class: 'card-name-btn', type: 'button', onclick: () => openDetail(p) }, p.nama)),
     h('p', { class: 'card-price' }, rupiah(p.harga)),
     btn
   );
 }
 
+/* ---------- Detail produk ---------- */
+let detailDlg = null;
+
+function openDetail(p) {
+  if (!detailDlg) {
+    detailDlg = h('dialog', { class: 'sheet', 'aria-labelledby': 'detailTitle' });
+    document.body.append(detailDlg);
+    bindDialog(detailDlg);
+    detailDlg.addEventListener('click', (ev) => { if (ev.target === detailDlg) closeDialog(detailDlg); });
+  }
+  const src = fotoUrl(p.foto, 900);
+  const add = h('button', {
+    class: 'btn btn-solid btn-block detail-add', type: 'button', disabled: p.habis,
+    onclick: (ev) => { closeDialog(detailDlg); addToCart(p, ev.currentTarget); }
+  }, p.habis ? 'Habis' : 'Tambah');
+  const desc = String(p.deskripsi || '').trim();
+
+  detailDlg.replaceChildren(h('div', { class: 'sheet-inner' },
+    h('div', { class: 'sheet-head' },
+      h('h2', { id: 'detailTitle', class: 'sheet-title' }, p.nama),
+      h('button', { class: 'icon-btn', type: 'button', 'aria-label': 'Tutup', onclick: () => closeDialog(detailDlg) }, '\u00d7')),
+    h('div', { class: 'detail-media' },
+      src ? h('img', { src, alt: p.nama, decoding: 'async' }) : h('span', { class: 'card-ph', 'aria-hidden': 'true' }, 'DL')),
+    h('p', { class: 'detail-price' }, rupiah(p.harga)),
+    h('div', { class: 'ocard-tags' },
+      p.kategori ? h('span', { class: 'tag' }, p.kategori) : null,
+      p.habis ? h('span', { class: 'tag tag-dibatalkan' }, 'Habis') : null),
+    // textContent lewat h(): deskripsi tidak pernah dibaca sebagai HTML; baris baru lewat CSS pre-line.
+    desc ? h('p', { class: 'detail-desc' }, desc) : null,
+    add
+  ));
+  detailDlg.showModal();
+}
+
 function productSection(id, title, items) {
-  return h('section', { class: 'section', id },
+  return h('section', { class: 'section', id, 'data-kat': '1' },
     h('h2', { class: 'section-title' }, title),
     h('div', { class: 'grid' }, items.map(productCard))
   );
@@ -103,8 +146,8 @@ function setActive(id) {
 }
 
 function buildTabs(entries) {
-  const nav = $('tabs');
-  nav.replaceChildren(...entries.map((e) =>
+  tabEntries = entries;
+  $('tabs').replaceChildren(...entries.map((e) =>
     h('a', {
       class: 'tab', href: '#' + e.id, 'data-target': e.id,
       onclick: (ev) => {
@@ -118,13 +161,74 @@ function buildTabs(entries) {
       }
     }, e.label)
   ));
+}
 
+// Observer hanya untuk section yang tampil; dibangun ulang tiap filter berubah.
+function observeVisible() {
   if (observer) observer.disconnect();
   observer = new IntersectionObserver((list) => {
     list.forEach((en) => { if (en.isIntersecting) setActive(en.target.id); });
   }, { rootMargin: '-25% 0px -65% 0px' });
-  entries.forEach((e) => { const el = $(e.id); if (el) observer.observe(el); });
-  if (entries.length) setActive(entries[0].id);
+  const visible = tabEntries.filter((e) => { const el = $(e.id); return el && !el.hidden; });
+  visible.forEach((e) => observer.observe($(e.id)));
+  const cur = document.querySelector('.tab.is-active');
+  if (visible.length && (!cur || cur.hidden)) setActive(visible[0].id);
+}
+
+/* ---------- Pencarian ---------- */
+const normQ = (s) => String(s || '').toLowerCase().replace(/\s+/g, ' ').trim();
+
+function applyFilter() {
+  const q = normQ(query);
+  let total = 0;
+  document.querySelectorAll('#content [data-kat]').forEach((sec) => {
+    let n = 0;
+    sec.querySelectorAll('.card').forEach((c) => {
+      const ok = !q || c.dataset.q.includes(q);
+      c.hidden = !ok; // hidden, bukan dibangun ulang: animasi tidak berulang
+      if (ok) n += 1;
+    });
+    sec.hidden = n === 0;
+    total += n;
+  });
+  const rev = $('ulasan');
+  if (rev) rev.hidden = Boolean(q);
+  document.querySelectorAll('.tab').forEach((t) => {
+    const el = $(t.dataset.target);
+    t.hidden = !el || el.hidden;
+  });
+  const none = $('noResult');
+  if (none) none.hidden = !(q && total === 0);
+  if (searchUi) {
+    searchUi.clear.hidden = !query;
+    searchUi.info.textContent = q ? (total ? total + ' produk ditemukan' : 'Produk tidak ditemukan') : '';
+  }
+  observeVisible();
+}
+
+function initSearch() {
+  const input = h('input', {
+    id: 'search', class: 'input search-input', type: 'search', placeholder: 'Cari produk\u2026',
+    'aria-label': 'Cari produk', autocomplete: 'off', enterkeyhint: 'search', 'aria-describedby': 'searchInfo'
+  });
+  const clear = h('button', { class: 'icon-btn search-clear', type: 'button', 'aria-label': 'Hapus kata kunci', hidden: true });
+  const info = h('p', { id: 'searchInfo', class: 'muted search-info', 'aria-live': 'polite' });
+  searchUi = { input, clear, info };
+  let t = 0;
+  input.addEventListener('input', () => {
+    clearTimeout(t);
+    t = setTimeout(() => { query = input.value; applyFilter(); }, 150);
+  });
+  clear.addEventListener('click', () => {
+    clearTimeout(t);
+    input.value = '';
+    query = '';
+    applyFilter();
+    input.focus();
+  });
+  clear.textContent = '\u00d7';
+  document.querySelector('nav.tabs').before(
+    h('div', { class: 'container search' }, h('div', { class: 'search-box' }, input, clear), info));
 }
 
 /* ---------- Render ---------- */
@@ -152,10 +256,12 @@ function render(data) {
   const content = $('content');
   const nodes = shown.map((g, i) => productSection(entries[i].id, g.nama, g.items));
   if (!shown.length) nodes.push(h('p', { class: 'state' }, 'Produk belum tersedia.'));
+  nodes.push(h('p', { class: 'state', id: 'noResult', hidden: true }, 'Produk tidak ditemukan'));
   nodes.push(reviewSection(data.ulasan));
   content.replaceChildren(...nodes);
 
   buildTabs(entries);
+  applyFilter();
   if (location.hash) {
     const target = $(location.hash.slice(1));
     if (target) target.scrollIntoView({ block: 'start' });
@@ -213,6 +319,7 @@ function updateBadge() {
 
 async function init() {
   initCheckout();
+  initSearch();
   initAudio({ sound: $('soundBtn'), music: $('musicBtn') }, toast);
   cart.subscribe(updateBadge);
   updateBadge();

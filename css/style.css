@@ -395,3 +395,24 @@ body:has(.wa-float:not([hidden])) .footer { padding-bottom: 96px; }
 
 .sk-w30 { width: 30%; } .sk-w40 { width: 40%; } .sk-w50 { width: 50%; }
 .sk-w60 { width: 60%; } .sk-w80 { width: 80%; } .sk-w100 { width: 100%; }
+
+/* UX-5: detail produk dan pencarian */
+.card-open { display: block; width: 100%; padding: 0; border: 0; font: inherit; cursor: pointer; }
+.card-name-btn { padding: 0; border: 0; background: none; font: inherit; color: inherit; text-align: left; overflow-wrap: anywhere; cursor: pointer; }
+@media (hover: hover) { .card-name-btn:hover { text-decoration: underline; text-underline-offset: 3px; } }
+.card-open:focus-visible { outline-offset: 3px; }
+
+.detail-media { display: grid; place-items: center; min-height: 160px; margin-bottom: 14px; border-radius: var(--radius); overflow: hidden; background: linear-gradient(160deg, #fff4d6, #f3d890); }
+.detail-media img { width: 100%; max-height: 46dvh; object-fit: contain; }
+.detail-media .card-ph { position: static; font-size: 48px; }
+.detail-price { margin: 0; font-size: 20px; font-weight: 600; color: var(--brown); }
+.detail-desc { margin: 12px 0 0; white-space: pre-line; overflow-wrap: anywhere; }
+.sheet .ocard-tags { margin: 10px 0 0; }
+.detail-add { margin-top: 18px; }
+
+.search { padding-top: 12px; }
+.search-box { position: relative; max-width: 820px; margin: 0 auto; }
+.search-input { padding-right: 52px; border-radius: 999px; }
+.search-input::-webkit-search-cancel-button { display: none; }
+.search-clear { position: absolute; top: 4px; right: 4px; }
+.search-info { max-width: 820px; min-height: 20px; margin: 6px auto 0; padding: 0 14px; }
