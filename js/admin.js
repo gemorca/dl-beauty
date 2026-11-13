@@ -1,4 +1,4 @@
-import { h, rupiah, waLink, fotoUrl } from './util.js';
+import { h, rupiah, waLink, fotoUrl, tanggal } from './util.js';
 import { readCache } from './api.js';
 import { session, adminLogin, adminLogout, adminOrders, adminSetStatus } from './admin-api.js';
 import { mountKatalog } from './admin-katalog.js';
@@ -118,6 +118,45 @@ function confirmDialog(title, text, okLabel) {
     dlg.addEventListener('close', () => resolve(answer), { once: true });
     dlg.showModal();
   });
+}
+
+/* ---------- Invoice (cetak) ---------- */
+// Dialog dibuat sekali, isinya dari data pesanan yang sudah dikirim adminView_ (tanpa panggilan server).
+let invoiceDlg = null;
+
+function openInvoice(o) {
+  if (!invoiceDlg) {
+    invoiceDlg = h('dialog', { class: 'sheet invoice-dialog', 'aria-labelledby': 'invoiceTitle' });
+    document.body.append(invoiceDlg);
+    bindDialog(invoiceDlg);
+    invoiceDlg.addEventListener('click', (ev) => { if (ev.target === invoiceDlg) closeDialog(invoiceDlg); });
+  }
+  const kv = (k, v) => h('div', { class: 'kv-row' }, h('dt', null, k), h('dd', null, v));
+  invoiceDlg.replaceChildren(h('div', { class: 'sheet-inner' },
+    h('p', { class: 'invoice-shop' }, $('brandName').textContent || 'DL BEAUTY'),
+    h('div', { class: 'sheet-head' },
+      h('h2', { id: 'invoiceTitle', class: 'sheet-title' }, 'Invoice #' + o.id),
+      h('button', { class: 'icon-btn no-print', type: 'button', 'aria-label': 'Tutup', onclick: () => closeDialog(invoiceDlg) }, '\u00d7')
+    ),
+    h('dl', { class: 'kv' },
+      kv('Tanggal', tanggal(o.waktu) || '-'),
+      kv('Pelanggan', o.nama),
+      kv('Cara terima', CARA_LABEL[o.cara_terima] || o.cara_terima),
+      kv('Pembayaran', o.cara_bayar || '-')
+    ),
+    h('div', { class: 'summary summary-flat invoice-items' },
+      (o.items || []).map((it) => h('div', { class: 'summary-row' },
+        h('span', null, it.jumlah + '\u00d7 ' + it.nama),
+        h('span', null, rupiah(it.harga * it.jumlah))
+      )),
+      h('div', { class: 'total' }, h('span', null, 'Total'), h('strong', { class: 'total-val' }, rupiah(o.total)))
+    ),
+    h('div', { class: 'confirm-actions no-print' },
+      h('button', { class: 'btn', type: 'button', onclick: () => closeDialog(invoiceDlg) }, 'Tutup'),
+      h('button', { class: 'btn btn-solid', type: 'button', onclick: () => window.print() }, 'Cetak invoice')
+    )
+  ));
+  if (!invoiceDlg.open) invoiceDlg.showModal();
 }
 
 /* ---------- Login ---------- */
@@ -287,6 +326,7 @@ function orderCard(o, hariIni, isNew) {
     onclick: (ev) => doAction(o, ke, ev.currentTarget)
   }, actionLabel(o, ke)));
   if (wa) actions.push(h('a', { class: 'btn btn-sm', href: wa, target: '_blank', rel: 'noopener' }, 'Chat'));
+  actions.push(h('button', { class: 'btn btn-sm', type: 'button', onclick: () => openInvoice(o) }, 'Invoice'));
 
   return h('article', { class: 'ocard' + (isNew ? ' is-new' : ''), 'data-id': String(o.id) },
     h('div', { class: 'ocard-head' },

@@ -162,3 +162,13 @@ select.input { appearance: auto; }
    jadi yang ditempelkan adalah #tabsHost. */
 #tabsHost { position: sticky; top: var(--header-h); z-index: 20; }
 #tabsHost .tabs { position: static; }
+
+/* Invoice admin: dialog + cetak. Saat dialog terbuka, yang tercetak hanya dialog itu. */
+.invoice-shop { margin: 0 0 4px; font-family: var(--serif); font-weight: 600; font-size: 20px; color: var(--brown-deep); }
+.invoice-items { margin-top: 12px; }
+@media print {
+  body:has(.invoice-dialog[open]) > *:not(.invoice-dialog) { display: none !important; }
+  .invoice-dialog[open] { position: absolute; top: 0; left: 0; width: 100%; max-width: none; max-height: none; margin: 0; border-radius: 0; box-shadow: none; overflow: visible; animation: none; }
+  .invoice-dialog::backdrop { display: none; }
+  .invoice-dialog .sheet-inner { max-height: none; overflow: visible; padding: 0; }
+}

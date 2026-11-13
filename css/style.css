@@ -486,3 +486,17 @@ body:has(.wa-float:not([hidden])) .footer { padding-bottom: 96px; }
 .riwayat-date { color: var(--muted); font-size: 13px; }
 .riwayat-total { flex: none; font-weight: 600; color: var(--brown); }
 @media (hover: hover) { .riwayat-row:hover .riwayat-id { text-decoration: underline; text-underline-offset: 3px; } }
+
+/* Cetak invoice (halaman pesanan) */
+.invoice-head { align-items: baseline; justify-content: space-between; gap: 12px; margin: 0 0 14px; padding-bottom: 10px; border-bottom: 2px solid var(--gold); }
+.invoice-shop { font-family: var(--serif); font-size: 22px; color: var(--brown-deep); }
+.print-only { display: none; }
+@media print {
+  @page { margin: 14mm; }
+  body { background: #fff; }
+  .topbar, .toast, .no-print, .page-title, .success-id { display: none !important; }
+  .print-only { display: flex; }
+  .page-narrow { max-width: none; padding: 0; }
+  .panel { break-inside: avoid; }
+  .is-enter > .panel { opacity: 1; animation: none; }
+}

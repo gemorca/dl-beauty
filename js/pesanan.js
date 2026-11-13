@@ -160,7 +160,8 @@ function summaryCard(o) {
       )),
       h('div', { class: 'total' }, h('span', null, 'Total'), h('strong', { class: 'total-val' }, rupiah(o.total)))
     ),
-    o.waktu ? h('p', { class: 'muted' }, 'Dipesan ' + tanggal(o.waktu)) : null
+    o.waktu ? h('p', { class: 'muted' }, 'Dipesan ' + tanggal(o.waktu)) : null,
+    h('button', { class: 'btn btn-block no-print', type: 'button', onclick: () => window.print() }, 'Cetak invoice')
   );
 }
 
@@ -246,15 +247,21 @@ function render() {
   document.title = 'Pesanan #' + order.id + ' | ' + (pengaturan.nama_toko || 'DL BEAUTY');
   const cancelled = order.status === 'DIBATALKAN';
   // replaceChildren(null) akan menulis teks "null"; kartu yang tidak ada dibuang dulu.
+  // Saat dicetak: hanya kepala invoice, cara terima, dan ringkasan. Sisanya diberi no-print.
+  const noPrint = (el) => { if (el) el.classList.add('no-print'); return el; };
   $('view').replaceChildren(...[
+    h('div', { class: 'print-only invoice-head' },
+      h('strong', { class: 'invoice-shop' }, pengaturan.nama_toko || 'DL BEAUTY'),
+      h('span', null, 'Invoice #' + order.id)
+    ),
     h('h1', { class: 'page-title' }, cancelled ? 'Pesanan dibatalkan' : 'Pesanan terkirim'),
     h('p', { class: 'success-id' }, 'Nomor pesanan #' + order.id),
-    stepper(order),
-    statusPanel(order),
+    noPrint(stepper(order)),
+    noPrint(statusPanel(order)),
     receiveCard(order),
     summaryCard(order),
-    reviewCard(order),
-    contactButton(order)
+    noPrint(reviewCard(order)),
+    noPrint(contactButton(order))
   ].filter(Boolean));
 }
 
