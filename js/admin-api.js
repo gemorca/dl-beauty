@@ -41,3 +41,14 @@ export function adminLogin(password) { return call('adminLogin', { password }, f
 export function adminLogout() { return call('adminLogout', {}, true); }
 export function adminOrders() { return call('adminOrders', {}, true); }
 export function adminSetStatus(id, dari, ke) { return call('adminSetStatus', { id, dari, ke }, true); }
+
+/* ---------- Tahap 6: produk, kategori, tampilan ---------- */
+// Semua balasan tulis berisi katalog terbaru: {produk[], kategori[], pengaturan{}}.
+export function adminCatalog() { return call('adminCatalog', {}, true); }
+export function adminSaveProduct(p) { return call('adminSaveProduct', p, true); }
+export function adminSetSold(id, habis) { return call('adminSetSold', { id, habis }, true); }
+export function adminDeleteProduct(id) { return call('adminDeleteProduct', { id }, true); }
+export function adminSaveCategories(kategori) { return call('adminSaveCategories', { kategori }, true); }
+export function adminSaveSettings(p) { return call('adminSaveSettings', p, true); }
+// data = base64 tanpa awalan "data:". Balasan: {url}
+export function adminUploadImage(jenis, mime, data) { return call('adminUploadImage', { jenis, mime, data }, true); }

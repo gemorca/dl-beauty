@@ -1,6 +1,7 @@
-import { h, rupiah, waLink } from './util.js';
+import { h, rupiah, waLink, fotoUrl } from './util.js';
 import { readCache } from './api.js';
 import { session, adminLogin, adminLogout, adminOrders, adminSetStatus } from './admin-api.js';
+import { mountKatalog } from './admin-katalog.js';
 
 const $ = (id) => document.getElementById(id);
 const POLL_MS = 15000;
@@ -34,6 +35,7 @@ let loading = false;
 let soundOn = false;
 let audio = null;
 let ui = null;
+let katalog = null;
 
 /* ---------- Util ---------- */
 function toast(msg) {
@@ -123,6 +125,8 @@ function confirmDialog(title, text, okLabel) {
 /* ---------- Login ---------- */
 function renderLogin(msg) {
   stopPolling();
+  if (katalog) katalog.reset();
+  katalog = null;
   data = null; ui = null; lastKey = ''; prevNeed = null; busy = false;
   $('tabsHost').replaceChildren();
   $('soundBtn').hidden = true;
@@ -165,8 +169,14 @@ function renderLogin(msg) {
 }
 
 function brandName() {
-  const c = readCache();
-  return (c && c.pengaturan && c.pengaturan.nama_toko) || 'DL BEAUTY';
+  return $('brandName').textContent || 'DL BEAUTY';
+}
+
+// Dipanggil setelah Tampilan disimpan: header admin ikut nama dan logo baru.
+function applyBrand(p) {
+  if (p.nama_toko) $('brandName').textContent = p.nama_toko;
+  $('brandLogo').src = p.logo_url ? fotoUrl(p.logo_url, 200) : 'assets/logo.jpeg';
+  if (ui) document.title = document.title.replace(/Admin \| .*$/, 'Admin | ' + brandName());
 }
 
 function handleAuth(e) {
@@ -183,7 +193,10 @@ async function showApp() {
   const badge = h('span', { class: 'badge', hidden: true }, '0');
   const tabs = [
     { id: 'pesanan', label: 'Pesanan', extra: badge },
-    { id: 'transaksi', label: 'Transaksi' }
+    { id: 'transaksi', label: 'Transaksi' },
+    { id: 'produk', label: 'Produk' },
+    { id: 'kategori', label: 'Kategori' },
+    { id: 'tampilan', label: 'Tampilan' }
   ].map((t) => ({
     ...t,
     el: h('button', {
@@ -216,9 +229,14 @@ async function showApp() {
       statCard('Perlu konfirmasi', stats.perlu), statCard('Sedang dikemas', stats.kemas)),
     updated, board);
   const panelT = h('section', { id: 'panel-transaksi', role: 'tabpanel', 'aria-labelledby': 'tab-transaksi', hidden: true });
+  const extra = (id) => h('section', { id: 'panel-' + id, role: 'tabpanel', 'aria-labelledby': 'tab-' + id, hidden: true });
+  const panelK = { produk: extra('produk'), kategori: extra('kategori'), tampilan: extra('tampilan') };
 
-  ui = { tabs, badge, stats, updated, board, panelP, panelT };
-  $('app').replaceChildren(panelP, panelT);
+  ui = { tabs, badge, stats, updated, board, panelP, panelT, panels: { pesanan: panelP, transaksi: panelT, ...panelK } };
+  $('app').replaceChildren(panelP, panelT, panelK.produk, panelK.kategori, panelK.tampilan);
+  katalog = mountKatalog({
+    panels: panelK, formDialog: $('formDialog'), toast, confirmDialog, handleAuth, onSettings: applyBrand
+  });
   $('soundBtn').hidden = false;
   $('logoutBtn').hidden = false;
   paintSound();
@@ -237,8 +255,10 @@ function selectTab(id) {
     t.el.setAttribute('aria-selected', String(on));
     t.el.tabIndex = on ? 0 : -1;
   });
-  ui.panelP.hidden = id !== 'pesanan';
-  ui.panelT.hidden = id !== 'transaksi';
+  Object.entries(ui.panels).forEach(([k, el]) => { el.hidden = k !== id; });
+  const aktif = ui.tabs.find((t) => t.id === id);
+  if (aktif) aktif.el.scrollIntoView({ block: 'nearest', inline: 'center' });
+  if (katalog && id !== 'pesanan' && id !== 'transaksi') katalog.show();
 }
 
 /* ---------- Kartu pesanan ---------- */

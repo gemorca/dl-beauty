@@ -87,3 +87,56 @@
   .stat-val { font-size: 20px; }
   .page-title { font-size: 25px; }
 }
+
+/* ---------- Tahap 6: Produk, Kategori, Tampilan ---------- */
+.tabs .tab { letter-spacing: .08em; padding: 0 11px; }
+.toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; margin-bottom: 4px; }
+.toolbar .section-title { margin: 0; }
+.field-hint { margin: 6px 0 0; font-size: 13px; }
+.admin .section-title { margin-bottom: 10px; }
+
+.plist { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 12px; }
+@media (min-width: 900px) { .plist { grid-template-columns: 1fr 1fr; gap: 14px; } }
+.pcard { display: flex; gap: 14px; min-width: 0; padding: 12px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.pcard.is-sold .pthumb img { filter: grayscale(.85); opacity: .7; }
+.pthumb { position: relative; flex: none; width: 84px; aspect-ratio: 3 / 4; border-radius: 12px; overflow: hidden; background: linear-gradient(160deg, #fff4d6, #f3d890); }
+.pthumb img { width: 100%; height: 100%; object-fit: cover; }
+.pthumb .card-ph { font-size: 24px; }
+.pthumb-lg { width: 120px; }
+.pbody { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+.pname { overflow-wrap: anywhere; }
+.pprice { font-weight: 600; color: var(--brown); }
+.pbody .ocard-tags { margin: 6px 0 0; }
+.pbody .ocard-actions { margin-top: 10px; }
+
+.foto-row { display: flex; gap: 14px; align-items: flex-start; }
+.foto-side { min-width: 0; flex: 1; }
+.check { display: flex; align-items: center; gap: 10px; margin: 16px 0 6px; cursor: pointer; }
+.check input { width: 20px; height: 20px; accent-color: var(--brown); flex: none; }
+select.input { appearance: auto; }
+
+.klist { margin: 12px 0 0; padding: 0; list-style: none; }
+.krow { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; padding: 10px 12px 10px 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; }
+.krow-main { display: flex; flex-direction: column; min-width: 0; }
+.krow-main strong { overflow-wrap: anywhere; }
+.krow-actions { display: flex; flex: none; gap: 6px; }
+.icon-sq { width: 40px; padding: 0; font-size: 17px; }
+.kform { margin-top: 18px; }
+.krow-add { display: flex; gap: 8px; }
+.krow-add .input { flex: 1; min-width: 0; }
+.krow-add .btn { flex: none; min-height: 48px; }
+
+.tstrip { display: flex; flex-direction: column; gap: 2px; }
+.tstrip .brand { pointer-events: none; }
+.imgblock { margin-top: 14px; }
+.imgblock .panel-title { margin-bottom: 8px; }
+.imgprev { display: grid; place-items: center; min-height: 80px; overflow: hidden; border: 1.5px dashed var(--line); border-radius: 14px; background: var(--bg); }
+.imgprev img { max-width: 100%; }
+.imgprev-logo img { width: 96px; height: 96px; margin: 10px; border-radius: 50%; object-fit: cover; background: #000; }
+.imgprev-banner img { width: 100%; }
+.imgprev-qris img { width: min(100%, 220px); margin: 10px; background: #fff; }
+.imgblock .ocard-actions { margin-top: 10px; }
+.admin .form-error { margin-top: 12px; }
+
+/* Tombol Simpan/Batal di dialog produk selalu terlihat, walau formulir panjang di HP */
+#formDialog .confirm-actions { position: sticky; bottom: -24px; margin: 18px -20px -24px; padding: 12px 20px 16px; background: var(--surface); border-top: 1px solid var(--line); }
