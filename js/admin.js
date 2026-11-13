@@ -3,6 +3,7 @@ import { readCache } from './api.js';
 import { session, adminLogin, adminLogout, adminOrders, adminSetStatus } from './admin-api.js';
 import { mountKatalog } from './admin-katalog.js';
 import { mountKeuangan } from './admin-keuangan.js';
+import { toast as showToast } from './ui.js';
 
 const $ = (id) => document.getElementById(id);
 const POLL_MS = 15000;
@@ -30,7 +31,6 @@ let riwayatMax = RIWAYAT_AWAL;
 let lastKey = '';
 let prevNeed = null;
 let timer = 0;
-let toastTimer = 0;
 let busy = false;
 let loading = false;
 let soundOn = false;
@@ -40,13 +40,7 @@ let katalog = null;
 let keu = null;
 
 /* ---------- Util ---------- */
-function toast(msg) {
-  const el = $('toast');
-  el.textContent = msg;
-  el.hidden = false;
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => { el.hidden = true; }, 3200);
-}
+const toast = (msg) => showToast(msg, 3200);
 
 function addDays(key, n) {
   const d = new Date(key + 'T00:00:00Z');

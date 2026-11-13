@@ -1,5 +1,6 @@
 import { fetchBootstrap, readCache, getOrder, choosePayment, submitReview } from './api.js';
 import { h, rupiah, waLink, stars, tanggal, fotoUrl } from './util.js';
+import { toast as showToast } from './ui.js';
 
 const $ = (id) => document.getElementById(id);
 const ORDERS_KEY = 'dlbeauty_orders_v1';
@@ -16,16 +17,9 @@ let order = null;
 let lastRendered = '';
 let busy = false;
 let timer = 0;
-let toastTimer = 0;
 
 /* ---------- Util ---------- */
-function toast(msg) {
-  const el = $('toast');
-  el.textContent = msg;
-  el.hidden = false;
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => { el.hidden = true; }, 2600);
-}
+const toast = (msg) => showToast(msg, 2600);
 
 function readParams() {
   const q = new URLSearchParams(location.search);

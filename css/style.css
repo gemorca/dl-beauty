@@ -9,6 +9,10 @@
   --line: #f0e3c4;
   --tint: #fdf1d3;
   --radius: 18px;
+  --ease: cubic-bezier(.22, 1, .36, 1);
+  --dur-1: .15s;
+  --dur-2: .3s;
+  --dur-3: .5s;
   --header-h: 64px;
   --tabs-h: 50px;
   --serif: "Playfair Display", Georgia, "Times New Roman", serif;
@@ -114,7 +118,10 @@ a { color: inherit; }
 .toast {
   position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 50; max-width: calc(100% - 40px);
   padding: 12px 20px; border-radius: 999px; background: var(--brown-deep); color: #fff; font-size: 14px;
+  opacity: 0; transform: translateX(-50%) translateY(8px); pointer-events: none;
+  transition: opacity var(--dur-2) var(--ease), transform var(--dur-2) var(--ease);
 }
+.toast.is-show { opacity: 1; transform: translateX(-50%); }
 
 @media (max-width: 560px) {
   .brand-name { font-size: 18px; }
@@ -273,4 +280,9 @@ body:has(.wa-float:not([hidden])) .footer { padding-bottom: 96px; }
   .topbar .btn-icon { width: 38px; min-height: 38px; padding: 0; }
   /* Tombol WhatsApp melayang sudah ada di pojok, jadi "Chat" di header dilepas di layar sempit. */
   .topbar #chatAdmin { display: none; }
+}
+
+/* Reduced motion global: semua animasi dan transisi diperpendek untuk pengguna yang memintanya. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
 }

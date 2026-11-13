@@ -3,20 +3,14 @@ import { h, rupiah, waLink, slug, stars, tanggal, fotoUrl } from './util.js';
 import { cart } from './cart.js';
 import { initCheckout, setCheckoutData, openCheckout } from './checkout.js';
 import { initAudio, playSfx } from './suara.js';
+import { toast as showToast } from './ui.js';
 
 const $ = (id) => document.getElementById(id);
 let observer = null;
 let lastRendered = '';
-let toastTimer = 0;
 
 /* ---------- Toast ---------- */
-function toast(msg) {
-  const el = $('toast');
-  el.textContent = msg;
-  el.hidden = false;
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => { el.hidden = true; }, 2200);
-}
+const toast = (msg) => showToast(msg, 2200);
 
 /* ---------- Header, banner, footer ---------- */
 function applySettings(p) {
