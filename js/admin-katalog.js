@@ -8,6 +8,7 @@ import {
 } from './admin-api.js';
 import { kompres, keBase64 } from './admin-gambar.js';
 import { setLoading } from './ui.js';
+import { createStepbar } from './progress.js';
 
 // ctx: { panels:{produk,kategori,tampilan}, formDialog, toast, confirmDialog, handleAuth, onSettings }
 export function mountKatalog(ctx) {
@@ -199,6 +200,7 @@ export function mountKatalog(ctx) {
     });
     paintFoto();
 
+    const sb = createStepbar();
     const batal = h('button', { class: 'btn', type: 'button', onclick: () => formDialog.close() }, 'Batal');
     const simpan = h('button', { class: 'btn btn-solid', type: 'submit', disabled: !adaKategori }, 'Simpan');
 
@@ -213,6 +215,7 @@ export function mountKatalog(ctx) {
         prev,
         h('div', { class: 'foto-side' }, h('div', { class: 'ocard-actions' }, pick, del), file, info)),
       h('label', { class: 'check', for: 'pf-habis' }, habis, h('span', null, 'Tandai habis (tidak bisa dipesan)')),
+      sb.el,
       err,
       h('div', { class: 'confirm-actions' }, batal, simpan)
     );
@@ -228,9 +231,12 @@ export function mountKatalog(ctx) {
       if (!kat.value) { err.textContent = 'Pilih kategori.'; kat.focus(); return; }
       saving = true;
       setLoading(simpan, true);
-      simpan.textContent = foto.pending && !foto.pending.url ? 'Mengunggah foto…' : 'Menyimpan…';
+      const perluUnggah = Boolean(foto.pending && !foto.pending.url);
+      simpan.textContent = perluUnggah ? 'Mengunggah foto…' : 'Menyimpan…';
+      if (perluUnggah) sb.update(0, 2, 'Mengunggah foto 1/1');
       try {
         const url = await pastikanUnggah('produk', foto);
+        if (perluUnggah) sb.update(1, 2, 'Menyimpan produk');
         simpan.textContent = 'Menyimpan…';
         const res = await adminSaveProduct({
           id: p ? p.id : '', nama: nm, harga: hg, kategori: kat.value,
@@ -246,6 +252,7 @@ export function mountKatalog(ctx) {
         fail(e, err);
       } finally {
         saving = false;
+        sb.hide();
         setLoading(simpan, false, 'Simpan');
         simpan.disabled = !adaKategori;
       }
@@ -309,7 +316,7 @@ export function mountKatalog(ctx) {
             onclick: async (ev) => {
               const btn = ev.currentTarget;
               const yes = await confirmDialog('Hapus kategori?', 'Kategori "' + k + '" akan dihapus.', 'Ya, hapus');
-              if (yes) aksi(() => adminSaveCategories(list.filter((x) => x !== k)), 'Kategori dihapus', btn);
+              if (yes) aksi(() => adminSaveCategories(list.filter((x) => x !== k), { progress: false }), 'Kategori dihapus', btn);
             }
           }, 'Hapus'))
       );
@@ -398,6 +405,7 @@ export function mountKatalog(ctx) {
         h('div', { class: 'ocard-actions' }, pick, del), file, info);
     }
 
+    const sb = createStepbar();
     const simpan = h('button', { class: 'btn btn-solid btn-block', type: 'submit' }, 'Simpan tampilan');
 
     const form = h('form', { novalidate: true },
@@ -412,7 +420,7 @@ export function mountKatalog(ctx) {
       imgBlock('logo', 'Logo', 'Dipotong jadi persegi di tengah. Kosong = memakai logo bawaan.', 200, 'assets/logo.jpeg'),
       imgBlock('banner', 'Banner', 'Gambar lebar di atas halaman toko. Kosong = memakai banner bawaan.', 1200, 'assets/banner.jpeg'),
       imgBlock('qris', 'Gambar QRIS', 'Ditampilkan ke pelanggan saat bayar. Pastikan kodenya jelas dan tidak terpotong. Kosong = pelanggan belum bisa membayar lewat QRIS.', 800, ''),
-      err, simpan);
+      sb.el, err, simpan);
 
     form.addEventListener('submit', async (ev) => {
       ev.preventDefault();
@@ -424,10 +432,19 @@ export function mountKatalog(ctx) {
       setLoading(simpan, true);
       try {
         const urls = {};
+        const perlu = ['logo', 'banner', 'qris'].filter((k) => st[k].pending && !st[k].pending.url);
+        const total = perlu.length + 1;
+        let selesai = 0;
         for (const key of ['logo', 'banner', 'qris']) {
-          if (st[key].pending && !st[key].pending.url) simpan.textContent = 'Mengunggah ' + key + '…';
+          const unggah = perlu.includes(key);
+          if (unggah) {
+            simpan.textContent = 'Mengunggah ' + key + '…';
+            sb.update(selesai, total, 'Mengunggah ' + key + ' ' + (selesai + 1) + '/' + perlu.length);
+          }
           urls[key] = await pastikanUnggah(key, st[key]);
+          if (unggah) selesai += 1;
         }
+        if (perlu.length) sb.update(selesai, total, 'Menyimpan tampilan');
         simpan.textContent = 'Menyimpan…';
         const res = await adminSaveSettings({
           nama_toko: nama.value, tagline: tagline.value, alamat: alamat.value, wa_admin: wa.value,
@@ -443,6 +460,7 @@ export function mountKatalog(ctx) {
         fail(e, err);
       } finally {
         saving = false;
+        sb.hide();
         setLoading(simpan, false, 'Simpan tampilan');
       }
     });

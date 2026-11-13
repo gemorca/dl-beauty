@@ -1,4 +1,5 @@
 import { CONFIG } from './config.js';
+import { track } from './progress.js';
 
 const KEY = 'dlbeauty_bootstrap_v2';
 
@@ -98,7 +99,7 @@ if (!CONFIG.API_URL) {
   };
 }
 
-export async function createOrder(payload) {
+async function createOrderImpl(payload) {
   if (!CONFIG.API_URL) {
     await wait(400);
     const items = payload.items.map((it) => {
@@ -127,7 +128,7 @@ export async function getOrder(id, token) {
 }
 
 // Pelanggan memilih bayar lewat QRIS (DIPESAN -> PEMBAYARAN).
-export async function choosePayment(id, token) {
+async function choosePaymentImpl(id, token) {
   if (!CONFIG.API_URL) {
     await wait(250);
     const list = demoLoad();
@@ -140,7 +141,7 @@ export async function choosePayment(id, token) {
   return post('choosePayment', { id, token }, 'Gagal memilih cara bayar.');
 }
 
-export async function submitReview(id, token, bintang, komentar) {
+async function submitReviewImpl(id, token, bintang, komentar) {
   if (!CONFIG.API_URL) {
     await wait(250);
     const list = demoLoad();
@@ -153,3 +154,8 @@ export async function submitReview(id, token, bintang, komentar) {
   }
   return post('submitReview', { id, token, bintang, komentar }, 'Gagal mengirim ulasan.');
 }
+
+// Tulis (create/update) tampil dengan progress bar atas layar. Baca (getOrder, bootstrap) tidak.
+export const createOrder = (payload) => track(() => createOrderImpl(payload));
+export const choosePayment = (id, token) => track(() => choosePaymentImpl(id, token));
+export const submitReview = (id, token, bintang, komentar) => track(() => submitReviewImpl(id, token, bintang, komentar));
