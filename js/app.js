@@ -59,11 +59,12 @@ function productCard(p, step) {
     p.habis ? h('span', { class: 'badge-sold' }, 'HABIS') : null
   );
   if (img) shimmerOnLoad(media, img);
-  // Kartu hanya membuka detail. Tambah keranjang dan Beli sekarang ada di dialog detail.
+  // Foto dan nama membuka detail. Tombol kecil menambah 1 item langsung; Beli sekarang tetap di dialog detail.
   const btn = h('button', {
-    class: 'btn', type: 'button',
-    onclick: () => openDetail(p)
-  }, 'Lihat detail');
+    class: 'btn btn-add', type: 'button', disabled: p.habis,
+    'aria-label': (p.habis ? 'Habis: ' : 'Tambah ke keranjang: ') + p.nama,
+    onclick: (ev) => addToCart(p, ev.currentTarget)
+  }, p.habis ? 'Habis' : '+ Keranjang');
 
   const card = h('article', {
     class: 'card' + (p.habis ? ' is-sold' : '') + (step >= 0 ? ' is-enter' : ''),
@@ -329,12 +330,13 @@ function renderError(err, hasData) {
 const addTimers = new WeakMap();
 
 function flashAdded(btn) {
+  if (!btn.dataset.label) btn.dataset.label = btn.textContent; // label asli, dipulihkan setelah 1 detik
   clearTimeout(addTimers.get(btn));
   btn.classList.add('is-added');
   btn.textContent = '\u2713 Ditambahkan';
   addTimers.set(btn, setTimeout(() => {
     btn.classList.remove('is-added');
-    btn.textContent = 'Tambah keranjang';
+    btn.textContent = btn.dataset.label;
   }, 1000));
 }
 
