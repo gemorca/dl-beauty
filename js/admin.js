@@ -3,7 +3,7 @@ import { readCache } from './api.js';
 import { session, adminLogin, adminLogout, adminOrders, adminSetStatus } from './admin-api.js';
 import { mountKatalog } from './admin-katalog.js';
 import { mountKeuangan } from './admin-keuangan.js';
-import { toast as showToast } from './ui.js';
+import { toast as showToast, setLoading } from './ui.js';
 
 const $ = (id) => document.getElementById(id);
 const POLL_MS = 15000;
@@ -145,8 +145,7 @@ function renderLogin(msg) {
     err.textContent = '';
     if (!pw.value) { err.textContent = 'Password wajib diisi.'; pw.focus(); return; }
     busy = true;
-    submit.disabled = true;
-    submit.textContent = 'Memeriksa…';
+    setLoading(submit, true, 'Memeriksa…');
     try {
       const res = await adminLogin(pw.value);
       session.set(res.token);
@@ -158,8 +157,7 @@ function renderLogin(msg) {
       pw.select();
     } finally {
       busy = false;
-      submit.disabled = false;
-      submit.textContent = 'Masuk';
+      setLoading(submit, false, 'Masuk');
     }
   });
   $('app').replaceChildren(form);
@@ -286,7 +284,7 @@ function orderCard(o, hariIni) {
 
   const actions = (o.lanjut || []).map((ke) => h('button', {
     class: 'btn btn-sm ' + (ke === 'DIBATALKAN' ? 'btn-danger' : 'btn-solid'), type: 'button',
-    onclick: () => doAction(o, ke)
+    onclick: (ev) => doAction(o, ke, ev.currentTarget)
   }, actionLabel(o, ke)));
   if (wa) actions.push(h('a', { class: 'btn btn-sm', href: wa, target: '_blank', rel: 'noopener' }, 'Chat'));
 
@@ -303,7 +301,7 @@ function orderCard(o, hariIni) {
   );
 }
 
-async function doAction(o, ke) {
+async function doAction(o, ke, btn) {
   if (busy) return;
   if (ke === 'DIBATALKAN') {
     const yes = await confirmDialog('Batalkan pesanan #' + o.id + '?',
@@ -312,6 +310,7 @@ async function doAction(o, ke) {
   }
   busy = true;
   document.querySelectorAll('.ocard button').forEach((b) => { b.disabled = true; });
+  setLoading(btn, true);
   try {
     await adminSetStatus(o.id, o.status, ke);
     toast('Pesanan #' + o.id + ': ' + (STATUS_LABEL[ke] || ke));
@@ -320,6 +319,8 @@ async function doAction(o, ke) {
     toast((e && e.message) || 'Gagal mengubah status.');
   } finally {
     busy = false;
+    // Spinner berhenti, tapi tombol tetap nonaktif sampai kartu digambar ulang oleh refresh di bawah.
+    if (btn) { setLoading(btn, false); btn.disabled = true; }
   }
   lastKey = '';
   await refresh(true);

@@ -7,6 +7,7 @@ import {
   adminSaveCategories, adminSaveSettings, adminUploadImage
 } from './admin-api.js';
 import { kompres, keBase64 } from './admin-gambar.js';
+import { setLoading } from './ui.js';
 
 // ctx: { panels:{produk,kategori,tampilan}, formDialog, toast, confirmDialog, handleAuth, onSettings }
 export function mountKatalog(ctx) {
@@ -57,9 +58,10 @@ export function mountKatalog(ctx) {
   }
 
   // Aksi cepat dari daftar (tanpa formulir): hasilnya toast.
-  async function aksi(fn, pesan) {
+  async function aksi(fn, pesan, btn) {
     if (busy) return false;
     busy = true;
+    setLoading(btn, true);
     try {
       const res = await fn();
       if (!alive) return false;
@@ -74,6 +76,7 @@ export function mountKatalog(ctx) {
       return false;
     } finally {
       busy = false;
+      setLoading(btn, false);
     }
   }
 
@@ -97,9 +100,9 @@ export function mountKatalog(ctx) {
           h('button', { class: 'btn btn-sm', type: 'button', onclick: () => openProduk(p) }, 'Edit'),
           h('button', {
             class: 'btn btn-sm', type: 'button',
-            onclick: () => aksi(() => adminSetSold(p.id, !p.habis), p.habis ? p.nama + ' tersedia lagi' : p.nama + ' ditandai habis')
+            onclick: (ev) => aksi(() => adminSetSold(p.id, !p.habis), p.habis ? p.nama + ' tersedia lagi' : p.nama + ' ditandai habis', ev.currentTarget)
           }, p.habis ? 'Tandai tersedia' : 'Tandai habis'),
-          h('button', { class: 'btn btn-sm btn-danger', type: 'button', onclick: () => hapusProduk(p) }, 'Hapus'))
+          h('button', { class: 'btn btn-sm btn-danger', type: 'button', onclick: (ev) => hapusProduk(p, ev.currentTarget) }, 'Hapus'))
       )
     );
   }
@@ -116,11 +119,11 @@ export function mountKatalog(ctx) {
     );
   }
 
-  async function hapusProduk(p) {
+  async function hapusProduk(p, btn) {
     const yes = await confirmDialog('Hapus produk ini?',
       '"' + p.nama + '" akan dihapus dari toko. Riwayat pesanan yang lama tidak terpengaruh.', 'Ya, hapus');
     if (!yes) return;
-    await aksi(() => adminDeleteProduct(p.id), 'Produk dihapus');
+    await aksi(() => adminDeleteProduct(p.id), 'Produk dihapus', btn);
   }
 
   // Satu gambar yang menunggu diunggah. url diisi setelah berhasil, supaya percobaan ulang
@@ -224,7 +227,7 @@ export function mountKatalog(ctx) {
       if (!(hg >= 1)) { err.textContent = 'Harga wajib diisi.'; harga.focus(); return; }
       if (!kat.value) { err.textContent = 'Pilih kategori.'; kat.focus(); return; }
       saving = true;
-      simpan.disabled = true;
+      setLoading(simpan, true);
       simpan.textContent = foto.pending && !foto.pending.url ? 'Mengunggah foto…' : 'Menyimpan…';
       try {
         const url = await pastikanUnggah('produk', foto);
@@ -243,8 +246,8 @@ export function mountKatalog(ctx) {
         fail(e, err);
       } finally {
         saving = false;
+        setLoading(simpan, false, 'Simpan');
         simpan.disabled = !adaKategori;
-        simpan.textContent = 'Simpan';
       }
     });
 
@@ -275,20 +278,20 @@ export function mountKatalog(ctx) {
       const v = input.value.replace(/\s+/g, ' ').trim();
       if (!v) { err.textContent = 'Isi nama kategori.'; input.focus(); return; }
       if (list.some((k) => k.toLowerCase() === v.toLowerCase())) { err.textContent = 'Kategori itu sudah ada.'; input.focus(); return; }
-      tambah.disabled = true;
+      setLoading(tambah, true);
       try {
         const ok = await aksi(() => adminSaveCategories([...list, v]), 'Kategori ditambahkan');
         if (ok) { const baru = document.getElementById('kf-nama'); if (baru) baru.focus(); }
       } finally {
-        tambah.disabled = false;
+        setLoading(tambah, false);
       }
     });
 
-    const pindah = (i, arah) => {
+    const pindah = (i, arah, btn) => {
       const next = list.slice();
       const j = i + arah;
       [next[i], next[j]] = [next[j], next[i]];
-      return aksi(() => adminSaveCategories(next), 'Urutan disimpan');
+      return aksi(() => adminSaveCategories(next), 'Urutan disimpan', btn);
     };
 
     const rows = list.map((k, i) => {
@@ -298,14 +301,15 @@ export function mountKatalog(ctx) {
           h('strong', null, k),
           h('span', { class: 'muted' }, n ? n + ' produk' : 'Belum ada produk')),
         h('div', { class: 'krow-actions' },
-          h('button', { class: 'btn btn-sm icon-sq', type: 'button', 'aria-label': 'Naikkan ' + k, disabled: i === 0, onclick: () => pindah(i, -1) }, '\u2191'),
-          h('button', { class: 'btn btn-sm icon-sq', type: 'button', 'aria-label': 'Turunkan ' + k, disabled: i === list.length - 1, onclick: () => pindah(i, 1) }, '\u2193'),
+          h('button', { class: 'btn btn-sm icon-sq', type: 'button', 'aria-label': 'Naikkan ' + k, disabled: i === 0, onclick: (ev) => pindah(i, -1, ev.currentTarget) }, '\u2191'),
+          h('button', { class: 'btn btn-sm icon-sq', type: 'button', 'aria-label': 'Turunkan ' + k, disabled: i === list.length - 1, onclick: (ev) => pindah(i, 1, ev.currentTarget) }, '\u2193'),
           h('button', {
             class: 'btn btn-sm btn-danger', type: 'button', 'aria-label': 'Hapus kategori ' + k, disabled: n > 0,
             title: n ? 'Pindahkan produknya dulu' : null,
-            onclick: async () => {
+            onclick: async (ev) => {
+              const btn = ev.currentTarget;
               const yes = await confirmDialog('Hapus kategori?', 'Kategori "' + k + '" akan dihapus.', 'Ya, hapus');
-              if (yes) aksi(() => adminSaveCategories(list.filter((x) => x !== k)), 'Kategori dihapus');
+              if (yes) aksi(() => adminSaveCategories(list.filter((x) => x !== k)), 'Kategori dihapus', btn);
             }
           }, 'Hapus'))
       );
@@ -417,7 +421,7 @@ export function mountKatalog(ctx) {
       if (nama.value.trim().length < 2) { err.textContent = 'Nama toko wajib diisi.'; nama.focus(); return; }
       if (wa.value.replace(/\D/g, '').length < 9) { err.textContent = 'Nomor WhatsApp admin tidak valid.'; wa.focus(); return; }
       saving = true;
-      simpan.disabled = true;
+      setLoading(simpan, true);
       try {
         const urls = {};
         for (const key of ['logo', 'banner', 'qris']) {
@@ -439,8 +443,7 @@ export function mountKatalog(ctx) {
         fail(e, err);
       } finally {
         saving = false;
-        simpan.disabled = false;
-        simpan.textContent = 'Simpan tampilan';
+        setLoading(simpan, false, 'Simpan tampilan');
       }
     });
 

@@ -3,6 +3,7 @@
 // lama tetap tampil selagi memuat), supaya angka selalu sama dengan sheet.
 import { h, rupiah, stars, tanggal } from './util.js';
 import { adminFinance, adminAddExpense, adminReviews, adminDeleteReview } from './admin-api.js';
+import { setLoading } from './ui.js';
 
 const CARA_LABEL = { antar: 'Antar', ambil: 'Ambil', cod: 'COD' };
 
@@ -131,8 +132,7 @@ export function mountKeuangan(ctx) {
       if (!(n >= 1)) { err.textContent = 'Jumlah wajib diisi.'; jumlah.focus(); return; }
       if (k.length < 2) { err.textContent = 'Tulis untuk apa uang ini keluar.'; ket.focus(); return; }
       saving = true;
-      simpan.disabled = true;
-      simpan.textContent = 'Menyimpan\u2026';
+      setLoading(simpan, true, 'Menyimpan\u2026');
       try {
         const res = await adminAddExpense(n, k, reqId);
         if (!alive) return;
@@ -146,8 +146,7 @@ export function mountKeuangan(ctx) {
         err.textContent = (e && e.message) || 'Gagal menyimpan.';
       } finally {
         saving = false;
-        simpan.disabled = false;
-        simpan.textContent = 'Simpan';
+        setLoading(simpan, false, 'Simpan');
       }
     });
 
@@ -170,7 +169,7 @@ export function mountKeuangan(ctx) {
       u.komentar ? h('p', { class: 'rcard-text' }, u.komentar) : h('p', { class: 'muted' }, 'Tanpa komentar.'),
       h('div', { class: 'rcard-foot' },
         h('span', { class: 'tag' }, u.pesanan_id ? 'Pesanan #' + u.pesanan_id : 'Tanpa nomor pesanan'),
-        h('button', { class: 'btn btn-sm btn-danger', type: 'button', onclick: () => hapusUlasan(u) }, 'Hapus')));
+        h('button', { class: 'btn btn-sm btn-danger', type: 'button', onclick: (ev) => hapusUlasan(u, ev.currentTarget) }, 'Hapus')));
   }
 
   function renderUlasan() {
@@ -210,13 +209,14 @@ export function mountKeuangan(ctx) {
     }
   }
 
-  async function hapusUlasan(u) {
+  async function hapusUlasan(u, btn) {
     if (busy) return;
     const yes = await confirmDialog('Hapus ulasan ini?',
       'Ulasan dari ' + (u.nama || 'pelanggan') + (u.pesanan_id ? ' (pesanan #' + u.pesanan_id + ')' : '') +
       ' akan hilang dari toko. Pelanggan itu bisa menulis ulasan lagi dari halaman pesanannya.', 'Ya, hapus');
     if (!yes) return;
     busy = true;
+    setLoading(btn, true);
     try {
       const res = await adminDeleteReview(u.id);
       if (!alive) return;
@@ -228,6 +228,7 @@ export function mountKeuangan(ctx) {
       toast((e && e.message) || 'Gagal menghapus.');
     } finally {
       busy = false;
+      setLoading(btn, false);
     }
   }
 

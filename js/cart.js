@@ -28,11 +28,17 @@ export const cart = {
   count() { return items.reduce((s, it) => s + it.jumlah, 0); },
   total() { return items.reduce((s, it) => s + it.harga * it.jumlah, 0); },
 
+  // Mengembalikan false bila jumlah sudah mencapai MAX_QTY (tidak ada yang berubah).
   add(p) {
     const found = items.find((it) => it.id === p.id);
-    if (found) found.jumlah = Math.min(MAX_QTY, found.jumlah + 1);
-    else items = [...items, { id: p.id, nama: p.nama, harga: p.harga, jumlah: 1 }];
+    if (found) {
+      if (found.jumlah >= MAX_QTY) return false;
+      found.jumlah += 1;
+    } else {
+      items = [...items, { id: p.id, nama: p.nama, harga: p.harga, jumlah: 1 }];
+    }
     save();
+    return true;
   },
 
   setQty(id, qty) {

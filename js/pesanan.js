@@ -1,6 +1,6 @@
 import { fetchBootstrap, readCache, getOrder, choosePayment, submitReview } from './api.js';
 import { h, rupiah, waLink, stars, tanggal, fotoUrl } from './util.js';
-import { toast as showToast } from './ui.js';
+import { toast as showToast, setLoading } from './ui.js';
 
 const $ = (id) => document.getElementById(id);
 const ORDERS_KEY = 'dlbeauty_orders_v1';
@@ -117,15 +117,13 @@ function statusPanel(o) {
     btn.addEventListener('click', async () => {
       if (busy) return;
       busy = true;
-      btn.disabled = true;
-      btn.textContent = 'Memproses…';
+      setLoading(btn, true, 'Memproses…');
       try {
         order = await choosePayment(params.id, params.token);
         render();
       } catch (e) {
         toast((e && e.message) || 'Gagal memilih cara bayar.');
-        btn.disabled = false;
-        btn.textContent = 'Bayar dengan QRIS';
+        setLoading(btn, false, 'Bayar dengan QRIS');
       } finally {
         busy = false;
       }
@@ -206,15 +204,13 @@ function reviewCard(o) {
     errEl.textContent = '';
     if (!picked) { errEl.textContent = 'Pilih bintang 1 sampai 5.'; opts[0].input.focus(); return; }
     busy = true;
-    submit.disabled = true;
-    submit.textContent = 'Mengirim…';
+    setLoading(submit, true, 'Mengirim…');
     try {
       order = await submitReview(params.id, params.token, picked, komentar.value.trim());
       render();
     } catch (e) {
       errEl.textContent = (e && e.message) || 'Gagal mengirim ulasan.';
-      submit.disabled = false;
-      submit.textContent = 'Kirim ulasan';
+      setLoading(submit, false, 'Kirim ulasan');
     } finally {
       busy = false;
     }

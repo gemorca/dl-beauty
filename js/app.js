@@ -1,6 +1,6 @@
 import { fetchBootstrap, readCache } from './api.js';
 import { h, rupiah, waLink, slug, stars, tanggal, fotoUrl } from './util.js';
-import { cart } from './cart.js';
+import { cart, MAX_QTY } from './cart.js';
 import { initCheckout, setCheckoutData, openCheckout } from './checkout.js';
 import { initAudio, playSfx } from './suara.js';
 import { toast as showToast } from './ui.js';
@@ -10,7 +10,7 @@ let observer = null;
 let lastRendered = '';
 
 /* ---------- Toast ---------- */
-const toast = (msg) => showToast(msg, 2200);
+const toast = (msg, action) => showToast(msg, action ? 3500 : 2200, action);
 
 /* ---------- Header, banner, footer ---------- */
 function applySettings(p) {
@@ -44,7 +44,7 @@ function productCard(p) {
   );
   const btn = h('button', {
     class: 'btn', type: 'button', disabled: p.habis,
-    onclick: () => window.dispatchEvent(new CustomEvent('cart:add', { detail: p }))
+    onclick: (ev) => addToCart(p, ev.currentTarget)
   }, p.habis ? 'Habis' : 'Tambah');
 
   return h('article', { class: 'card' + (p.habis ? ' is-sold' : '') },
@@ -174,17 +174,39 @@ function renderError(err, hasData) {
 }
 
 /* ---------- Mulai ---------- */
-window.addEventListener('cart:add', (e) => {
-  cart.add(e.detail);
+// Tombol "Tambah" memberi umpan balik sendiri; keranjang tidak lagi terbuka otomatis.
+const addTimers = new WeakMap();
+
+function flashAdded(btn) {
+  clearTimeout(addTimers.get(btn));
+  btn.classList.add('is-added');
+  btn.textContent = '\u2713 Ditambahkan';
+  addTimers.set(btn, setTimeout(() => {
+    btn.classList.remove('is-added');
+    btn.textContent = 'Tambah';
+  }, 1000));
+}
+
+function addToCart(p, btn) {
+  if (!cart.add(p)) { toast('Maksimal ' + MAX_QTY + ' per produk'); return; }
   playSfx('tambah');
-  openCheckout();
-});
+  flashAdded(btn);
+  toast('Ditambahkan ke keranjang', { label: 'Lihat', onClick: openCheckout });
+}
+
+let prevCount = cart.count();
 
 function updateBadge() {
   const n = cart.count();
   const badge = $('cartBadge');
   badge.textContent = String(n);
   badge.hidden = n === 0;
+  if (n > prevCount) {
+    badge.classList.remove('is-bump');
+    void badge.offsetWidth; // ulang animasi bila ditambah beruntun
+    badge.classList.add('is-bump');
+  }
+  prevCount = n;
   $('cartBtn').setAttribute('aria-label', n ? 'Buka keranjang, ' + n + ' item' : 'Buka keranjang');
 }
 

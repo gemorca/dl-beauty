@@ -282,6 +282,46 @@ body:has(.wa-float:not([hidden])) .footer { padding-bottom: 96px; }
   .topbar #chatAdmin { display: none; }
 }
 
+/* UX-2: tombol dan respons sentuh */
+.btn { transition: background-color var(--dur-1) var(--ease), border-color var(--dur-1) var(--ease), color var(--dur-1) var(--ease), box-shadow var(--dur-2) var(--ease), transform var(--dur-1) var(--ease); }
+@media (hover: hover) {
+  .btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(59, 34, 8, .16); }
+}
+.btn:active:not(:disabled) { transform: scale(.97); box-shadow: none; }
+
+.btn.is-loading:disabled { opacity: .85; cursor: progress; }
+.btn.is-loading::before { content: ""; flex: none; width: 14px; height: 14px; margin-right: 8px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: spin .7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+/* Spinner penanda proses, bukan hiasan: tetap berputar (lebih pelan) walau reduced motion. */
+@media (prefers-reduced-motion: reduce) {
+  .btn.is-loading::before { animation-duration: 1.4s !important; animation-iteration-count: infinite !important; }
+}
+
+.btn.is-added, .btn.is-added:hover { background: var(--brown); border-color: var(--brown); color: #fff; }
+
+.icon-btn { transition: background-color var(--dur-1) var(--ease), transform var(--dur-1) var(--ease); }
+.icon-btn:active { transform: scale(.9); }
+.stepper button { transition: background-color var(--dur-1) var(--ease), transform var(--dur-1) var(--ease); }
+@media (hover: hover) { .stepper button:hover:not(:disabled) { background: var(--tint); } }
+.stepper button:active:not(:disabled) { transform: scale(.88); }
+.stepper span.is-pop { animation: pop .3s var(--ease); }
+.seg-btn { transition: background-color var(--dur-1) var(--ease), border-color var(--dur-1) var(--ease), color var(--dur-1) var(--ease), transform var(--dur-1) var(--ease); }
+.seg-btn:active { transform: scale(.96); }
+.tab { transition: color var(--dur-2) var(--ease), border-color var(--dur-2) var(--ease); }
+.opt { transition: border-color var(--dur-1) var(--ease), background-color var(--dur-1) var(--ease); }
+.input { transition: border-color var(--dur-1) var(--ease); }
+.star-opt label { transition: color var(--dur-1) var(--ease), transform var(--dur-1) var(--ease); }
+.star-opt label:active { transform: scale(.85); }
+.star-opt label.is-on { animation: pop .3s var(--ease); }
+.badge.is-bump { animation: bump .4s var(--ease); }
+@keyframes pop { 40% { transform: scale(1.3); } }
+@keyframes bump { 40% { transform: scale(1.35); } }
+
+/* Toast dengan tombol aksi */
+.toast.has-action { display: flex; align-items: center; gap: 12px; padding-right: 10px; }
+.toast.has-action.is-show { pointer-events: auto; }
+.toast-action { flex: none; min-height: 40px; padding: 0 8px; border: 0; background: none; color: #f3d890; font: 600 14px/1 var(--sans); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+
 /* Reduced motion global: semua animasi dan transisi diperpendek untuk pengguna yang memintanya. */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }

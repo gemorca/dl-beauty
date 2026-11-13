@@ -9,23 +9,40 @@ export function reducedMotion() {
 /* ---------- Toast ---------- */
 // Elemen #toast sudah ada di tiap halaman. Dibuat tampil lewat class .is-show
 // (bukan hanya atribut hidden) supaya bisa dianimasikan.
+// action (opsional): { label, onClick } menambah tombol di dalam toast.
 let toastTimer = 0;
 let toastHide = 0;
 const TOAST_FADE_MS = 220;
 
-export function toast(msg, ms = 2600) {
+function hideToast() {
   const el = document.getElementById('toast');
   if (!el) return;
   clearTimeout(toastTimer);
   clearTimeout(toastHide);
-  el.textContent = msg;
+  el.classList.remove('is-show');
+  toastHide = setTimeout(() => { el.hidden = true; }, TOAST_FADE_MS);
+}
+
+export function toast(msg, ms = 2600, action = null) {
+  const el = document.getElementById('toast');
+  if (!el) return;
+  clearTimeout(toastTimer);
+  clearTimeout(toastHide);
+  el.classList.toggle('has-action', Boolean(action));
+  if (action) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'toast-action';
+    btn.textContent = action.label;
+    btn.addEventListener('click', () => { hideToast(); action.onClick(); });
+    el.replaceChildren(document.createTextNode(msg), btn);
+  } else {
+    el.textContent = msg;
+  }
   el.hidden = false;
   void el.offsetWidth; // paksa reflow: transisi mulai dari keadaan tersembunyi
   el.classList.add('is-show');
-  toastTimer = setTimeout(() => {
-    el.classList.remove('is-show');
-    toastHide = setTimeout(() => { el.hidden = true; }, TOAST_FADE_MS);
-  }, ms);
+  toastTimer = setTimeout(hideToast, ms);
 }
 
 /* ---------- Tombol loading ---------- */

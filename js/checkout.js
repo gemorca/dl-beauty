@@ -1,6 +1,7 @@
 import { cart, MAX_QTY } from './cart.js';
 import { createOrder, CARA_DEFAULT } from './api.js';
 import { h, rupiah } from './util.js';
+import { setLoading } from './ui.js';
 
 const PROFILE_KEY = 'dlbeauty_profile_v1';
 const ORDERS_KEY = 'dlbeauty_orders_v1';
@@ -123,6 +124,8 @@ function renderForm() {
   radios.forEach((r) => r.input.addEventListener('change', syncCara));
   syncCara();
 
+  const prevQty = new Map(); // jumlah terakhir yang digambar, untuk animasi angka berubah
+
   function row(it) {
     return h('div', { class: 'cart-row' },
       h('div', { class: 'cart-info' },
@@ -131,7 +134,7 @@ function renderForm() {
       ),
       h('div', { class: 'stepper' },
         h('button', { type: 'button', 'aria-label': 'Kurangi ' + it.nama, onclick: () => cart.setQty(it.id, it.jumlah - 1) }, '\u2212'),
-        h('span', { 'aria-live': 'polite' }, String(it.jumlah)),
+        h('span', { class: prevQty.has(it.id) && prevQty.get(it.id) !== it.jumlah ? 'is-pop' : null, 'aria-live': 'polite' }, String(it.jumlah)),
         h('button', { type: 'button', 'aria-label': 'Tambah ' + it.nama, disabled: it.jumlah >= MAX_QTY, onclick: () => cart.setQty(it.id, it.jumlah + 1) }, '+')
       )
     );
@@ -140,6 +143,8 @@ function renderForm() {
   function refresh() {
     const has = cart.items.length > 0;
     itemsBox.replaceChildren(...cart.items.map(row));
+    prevQty.clear();
+    cart.items.forEach((it) => prevQty.set(it.id, it.jumlah));
     totalEl.textContent = rupiah(cart.total());
     empty.hidden = has;
     form.hidden = !has;
@@ -178,8 +183,7 @@ function renderForm() {
     };
 
     busy = true;
-    submit.disabled = true;
-    submit.textContent = 'Mengirim\u2026';
+    setLoading(submit, true, 'Mengirim\u2026');
     try {
       const res = await createOrder(payload);
       saveJSON(PROFILE_KEY, { nama: v.nama, wa: v.wa, alamat: v.alamat, cara: c.kode });
@@ -195,8 +199,7 @@ function renderForm() {
     } finally {
       if (!leaving) {
         busy = false;
-        submit.disabled = false;
-        submit.textContent = 'Kirim pesanan';
+        setLoading(submit, false, 'Kirim pesanan');
       }
     }
   });
