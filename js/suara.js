@@ -193,18 +193,28 @@ function startFile(auto) {
     fileAudio = new Audio(MUSIK_URL);
     fileAudio.loop = true;
     fileAudio.volume = 0.35;
-    fileAudio.preload = 'none';
+    fileAudio.preload = 'auto'; // langsung muat audio agar tidak ada jeda
+    fileAudio.setAttribute('playsinline', ''); // wajib untuk kompatibilitas iOS Safari
   }
   const seq = ++playSeq;
-  const stale = () => seq !== playSeq; // permintaan lama atau musik sudah dimatikan
+  const stale = () => seq !== playSeq;
   silent = false;
   fileAudio.muted = false;
   const p = fileAudio.play();
   if (!p || !p.then) return;
-  p.then(() => { if (!stale()) paint(); }, (err) => {
+  p.then(() => {
+    if (!stale()) {
+      disarm();
+      paint();
+    }
+  }, (err) => {
     if (stale()) return;
-    if (!auto) { giveUp(err); notify('Musik tidak bisa diputar'); return; }
-    // Otomatis dengan suara diblokir browser: mulai senyap (selalu diizinkan), bunyikan saat interaksi pertama.
+    if (!auto) {
+      giveUp(err);
+      notify('Musik tidak bisa diputar');
+      return;
+    }
+    // Diblokir browser: putar senyap dulu, lalu bunyikan saat interaksi pertama
     fileAudio.muted = true;
     fileAudio.play().then(() => {
       if (stale()) return;
@@ -288,16 +298,26 @@ const GESTURES = ['pointerup', 'click', 'keydown', 'touchend'];
 let armed = false;
 
 function onGesture(ev) {
-  if (ev && ev.target && ev.target.closest && ev.target.closest('#musicBtn')) return; // toggleMusic yang mengurus
-  if (musicOn && silent && fileAudio) { // bunyikan musik senyap; tetap siaga bila browser menolak
+  if (ev && ev.target && ev.target.closest && ev.target.closest('#musicBtn')) return;
+
+  // Kondisi 1: musik sudah jalan dalam mode senyap, tinggal buka mute
+  if (musicOn && silent && fileAudio) {
     fileAudio.muted = false;
     const done = () => { silent = false; paint(); disarm(); };
     const p = fileAudio.play();
-    if (p && p.then) p.then(done, () => { fileAudio.muted = true; }); else done();
+    if (p && p.then) {
+      p.then(done, () => { fileAudio.muted = true; });
+    } else {
+      done();
+    }
     return;
   }
-  disarm();
-  if (musicOn || !readMusicPref()) return;
+
+  // Kondisi 2: pemutaran senyap sebelumnya juga ditolak (misal di iOS), mulai dari awal
+  if (musicOn || !readMusicPref()) {
+    disarm();
+    return;
+  }
   startMusic(false);
   paint();
 }
