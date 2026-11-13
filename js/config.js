@@ -3,3 +3,9 @@
 export const CONFIG = {
   API_URL: 'https://script.google.com/macros/s/AKfycbwihyljd-Xzv5G89xHZiPhDmRXwEDKLBHAcvNd3LQiceUW-lemymhG-qNTTLqGGzf71dQ/exec'
 };
+
+export const CONFIG = {
+  // pengaturan lainnya...
+  MUSIK_URL: 'assets/dj.mp3',
+};
+
