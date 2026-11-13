@@ -6,6 +6,6 @@ export const CONFIG = {
 
 export const CONFIG = {
   // pengaturan lainnya...
-  MUSIK_URL: 'assets/dj.mp3',
+  MUSIK_URL: 'assets/LALUNA - VIRAL TIKTOK__ FULL BASS ALFATIR PONTOH NEWW 2K23(M4A_128K).m4a',
 };
 
