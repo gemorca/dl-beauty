@@ -111,15 +111,15 @@ function openDetail(p) {
     h('div', { class: 'sheet-head' },
       h('h2', { id: 'detailTitle', class: 'sheet-title' }, p.nama),
       h('button', { class: 'icon-btn', type: 'button', 'aria-label': 'Tutup', onclick: () => closeDialog(detailDlg) }, '\u00d7')),
+    h('p', { class: 'detail-price' }, rupiah(p.harga)),
     h('div', { class: 'detail-media' },
       src ? h('img', { src, alt: p.nama, decoding: 'async' }) : h('span', { class: 'card-ph', 'aria-hidden': 'true' }, 'DL')),
-    h('p', { class: 'detail-price' }, rupiah(p.harga)),
     h('div', { class: 'ocard-tags' },
       p.kategori ? h('span', { class: 'tag' }, p.kategori) : null,
       p.habis ? h('span', { class: 'tag tag-dibatalkan' }, 'Habis') : null),
     // textContent lewat h(): deskripsi tidak pernah dibaca sebagai HTML; baris baru lewat CSS pre-line.
     desc ? h('p', { class: 'detail-desc' }, desc) : null,
-    h('div', { class: 'detail-actions' }, buy, add)
+    h('div', { class: 'detail-bar' }, add, buy)
   ));
   detailDlg.showModal();
 }
