@@ -145,7 +145,7 @@ function semuaMetode() {
 // Satu tombol per metode. ganti=false: memilih pertama kali; ganti=true: mengganti metode yang sudah dipilih.
 function metodeButtons(daftar, ganti) {
   const btns = daftar.map((m) => {
-    const label = ganti ? 'Ganti ke ' + m : (m === 'QRIS' ? 'Bayar dengan QRIS' : 'Transfer ' + m);
+    const label = ganti ? 'Ubah Metode Pembayaran ke ' + m : (m === 'QRIS' ? 'Bayar dengan QRIS' : 'Transfer ' + m);
     const btn = h('button', { class: 'btn btn-block' + (!ganti && m === 'QRIS' ? ' btn-solid' : ''), type: 'button' }, label);
     btn.addEventListener('click', async () => {
       if (busy) return;
@@ -155,7 +155,7 @@ function metodeButtons(daftar, ganti) {
       try {
         order = await choosePayment(params.id, params.token, m);
         render();
-        if (ganti) toast('Metode bayar diganti ke ' + m);
+        if (ganti) toast('Metode bayar diubah ke ' + m);
       } catch (e) {
         toast((e && e.message) || 'Gagal memilih cara bayar.');
         btns.forEach((b) => { b.disabled = false; });
