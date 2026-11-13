@@ -8,7 +8,7 @@ const MAKS_FILE = 15 * 1024 * 1024;
 const JENIS = {
   produk: { maks: 1000, bentuk: 'fit', mutu: 0.86 },
   logo: { maks: 512, bentuk: 'persegi', mutu: 0.9 },
-  banner: { maks: 1600, bentuk: 'fit', mutu: 0.86 },
+  banner: { asli: true },
   qris: { maks: 1000, bentuk: 'fit', mutu: 0.92 }
 };
 
@@ -42,6 +42,13 @@ export async function kompres(file, jenis) {
     throw new Error('Pilih file gambar (JPEG, PNG, atau WebP).');
   }
   if (file.size > MAKS_FILE) throw new Error('File terlalu besar. Maksimal 15 MB.');
+
+  if (cfg.asli) {
+    const mimeAsli = String(file.type || '').toLowerCase();
+    if (!/^image\/(jpeg|png|webp)$/.test(mimeAsli)) throw new Error('Banner harus JPEG, PNG, atau WebP.');
+    if (file.size > 10 * 1024 * 1024) throw new Error('Banner terlalu besar. Maksimal 10 MB.');
+    return { blob: file, url: URL.createObjectURL(file), mime: mimeAsli };
+  }
 
   const src = await muat(file);
   const w = src.width;

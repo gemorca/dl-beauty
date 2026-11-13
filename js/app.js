@@ -32,7 +32,7 @@ function applySettings(p) {
   document.title = nama;
   $('brandName').textContent = nama;
   if (p.logo_url) $('brandLogo').src = fotoUrl(p.logo_url);
-  if (p.banner_url) $('banner').src = fotoUrl(p.banner_url);
+  if (p.banner_url) $('banner').src = fotoUrl(p.banner_url, 2400);
   $('banner').alt = 'Banner ' + nama;
 
   const chat = $('chatAdmin');
