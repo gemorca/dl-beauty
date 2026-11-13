@@ -2,6 +2,7 @@ import { fetchBootstrap, readCache } from './api.js';
 import { h, rupiah, waLink, slug, stars, tanggal, fotoUrl } from './util.js';
 import { cart } from './cart.js';
 import { initCheckout, setCheckoutData, openCheckout } from './checkout.js';
+import { initAudio, playSfx } from './suara.js';
 
 const $ = (id) => document.getElementById(id);
 let observer = null;
@@ -181,6 +182,7 @@ function renderError(err, hasData) {
 /* ---------- Mulai ---------- */
 window.addEventListener('cart:add', (e) => {
   cart.add(e.detail);
+  playSfx('tambah');
   openCheckout();
 });
 
@@ -194,6 +196,7 @@ function updateBadge() {
 
 async function init() {
   initCheckout();
+  initAudio({ sound: $('soundBtn'), music: $('musicBtn') }, toast);
   cart.subscribe(updateBadge);
   updateBadge();
   $('cartBtn').addEventListener('click', openCheckout);

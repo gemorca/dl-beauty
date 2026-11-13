@@ -156,3 +156,9 @@ select.input { appearance: auto; }
 .rcard-text { margin: 0 0 4px; overflow-wrap: anywhere; }
 .rcard-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-top: 10px; }
 .toolbar + .stats { margin-top: 12px; }
+
+/* Tab admin menempel di bawah header saat halaman di-scroll.
+   .tabs sticky di style.css hanya menempel di dalam induknya (#tabsHost, setinggi tab itu sendiri),
+   jadi yang ditempelkan adalah #tabsHost. */
+#tabsHost { position: sticky; top: var(--header-h); z-index: 20; }
+#tabsHost .tabs { position: static; }
