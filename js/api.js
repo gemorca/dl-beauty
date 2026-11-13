@@ -139,8 +139,11 @@ async function choosePaymentImpl(id, token, metode) {
     const list = demoLoad();
     const o = demoFind(list, { id, token });
     if (o.cara_terima !== 'antar') throw new Error('Pesanan ini dibayar langsung, tidak lewat QRIS.');
-    if (o.status === 'DIPESAN') { o.status = 'PEMBAYARAN'; o.cara_bayar = metode; demoSave(list); }
-    else if (o.status !== 'PEMBAYARAN') throw new Error('Status pesanan sudah ' + o.status + '. Pilihan bayar tidak bisa diubah.');
+    if (o.status !== 'DIPESAN' && o.status !== 'PEMBAYARAN') throw new Error('Status pesanan sudah ' + o.status + '. Pilihan bayar tidak bisa diubah.');
+    // PEMBAYARAN -> PEMBAYARAN dengan metode lain = pelanggan mengganti metode (selama admin belum menerima).
+    o.status = 'PEMBAYARAN';
+    o.cara_bayar = metode;
+    demoSave(list);
     return o;
   }
   return post('choosePayment', { id, token, metode }, 'Gagal memilih cara bayar.');

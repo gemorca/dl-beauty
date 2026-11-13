@@ -137,39 +137,61 @@ function bankScreen(o) {
   );
 }
 
+// Semua metode bayar: QRIS dulu, lalu tiap bank dari pengaturan.rekening (kosong = hanya QRIS).
+function semuaMetode() {
+  return ['QRIS'].concat(parseRekening(pengaturan.rekening).map((r) => r.bank));
+}
+
+// Satu tombol per metode. ganti=false: memilih pertama kali; ganti=true: mengganti metode yang sudah dipilih.
+function metodeButtons(daftar, ganti) {
+  const btns = daftar.map((m) => {
+    const label = ganti ? 'Ganti ke ' + m : (m === 'QRIS' ? 'Bayar dengan QRIS' : 'Transfer ' + m);
+    const btn = h('button', { class: 'btn btn-block' + (!ganti && m === 'QRIS' ? ' btn-solid' : ''), type: 'button' }, label);
+    btn.addEventListener('click', async () => {
+      if (busy) return;
+      busy = true;
+      btns.forEach((b) => { b.disabled = true; });
+      setLoading(btn, true, 'Memproses…');
+      try {
+        order = await choosePayment(params.id, params.token, m);
+        render();
+        if (ganti) toast('Metode bayar diganti ke ' + m);
+      } catch (e) {
+        toast((e && e.message) || 'Gagal memilih cara bayar.');
+        btns.forEach((b) => { b.disabled = false; });
+        setLoading(btn, false, label);
+      } finally {
+        busy = false;
+      }
+    });
+    return btn;
+  });
+  return btns;
+}
+
+// Tombol "Ganti metode bayar" di layar bayar (salah klik). Tidak ada bila tidak ada metode lain.
+function gantiMetode(o) {
+  const lain = semuaMetode().filter((m) => m !== (o.cara_bayar || 'QRIS'));
+  if (!lain.length) return null;
+  const list = h('div', { class: 'ganti-list', hidden: true }, metodeButtons(lain, true));
+  const toggle = h('button', {
+    class: 'btn btn-block', type: 'button', 'aria-expanded': 'false',
+    onclick: () => { list.hidden = !list.hidden; toggle.setAttribute('aria-expanded', String(!list.hidden)); }
+  }, 'Ganti metode bayar');
+  return h('div', { class: 'ganti' }, toggle, list);
+}
+
 function statusPanel(o) {
   // cara_bayar kosong = data lama sebelum ada pilihan bank: tetap QRIS.
   if (o.status === 'PEMBAYARAN' && o.cara_terima === 'antar') {
-    return !o.cara_bayar || o.cara_bayar === 'QRIS' ? qrisScreen(o) : bankScreen(o);
+    const layar = !o.cara_bayar || o.cara_bayar === 'QRIS' ? qrisScreen(o) : bankScreen(o);
+    const ganti = gantiMetode(o);
+    if (ganti) layar.append(ganti);
+    return layar;
   }
 
   const kids = [h('p', { class: 'status-text' }, statusText(o))];
-  if (o.status === 'DIPESAN' && o.cara_terima === 'antar') {
-    // Satu tombol per metode: QRIS dulu, lalu tiap bank dari pengaturan.rekening (kosong = hanya QRIS).
-    const metode = ['QRIS'].concat(parseRekening(pengaturan.rekening).map((r) => r.bank));
-    const btns = metode.map((m) => {
-      const label = m === 'QRIS' ? 'Bayar dengan QRIS' : 'Transfer ' + m;
-      const btn = h('button', { class: 'btn btn-block' + (m === 'QRIS' ? ' btn-solid' : ''), type: 'button' }, label);
-      btn.addEventListener('click', async () => {
-        if (busy) return;
-        busy = true;
-        btns.forEach((b) => { b.disabled = true; });
-        setLoading(btn, true, 'Memproses…');
-        try {
-          order = await choosePayment(params.id, params.token, m);
-          render();
-        } catch (e) {
-          toast((e && e.message) || 'Gagal memilih cara bayar.');
-          btns.forEach((b) => { b.disabled = false; });
-          setLoading(btn, false, label);
-        } finally {
-          busy = false;
-        }
-      });
-      return btn;
-    });
-    kids.push(...btns);
-  }
+  if (o.status === 'DIPESAN' && o.cara_terima === 'antar') kids.push(...metodeButtons(semuaMetode(), false));
   return h('section', { class: 'panel' + (o.status === 'DIBATALKAN' ? ' panel-cancel' : '') }, kids);
 }
 

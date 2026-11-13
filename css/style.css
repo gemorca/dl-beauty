@@ -503,3 +503,7 @@ body:has(.wa-float:not([hidden])) .footer { padding-bottom: 96px; }
 
 /* Layar bayar transfer bank */
 .kv-big { font-size: 18px; font-weight: 600; letter-spacing: .02em; color: var(--brown); }
+
+/* Ganti metode bayar */
+.ganti { margin-top: 6px; }
+.ganti-list { margin-top: 4px; }
