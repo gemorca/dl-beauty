@@ -37,7 +37,6 @@ a { color: inherit; }
   border-bottom: 1px solid var(--line);
 }
 .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; min-width: 0; }
-.brand-logo:not([src]) { visibility: hidden; }
 .brand-logo { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; object-position: 50% 35%; background: #000; flex: none; }
 .brand-name { font-family: var(--sans); font-weight: 700; font-size: 20px; color: var(--brown-deep); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
@@ -55,7 +54,7 @@ a { color: inherit; }
 .hero { padding-top: 20px; padding-bottom: 8px; }
 .hero-img { width: 100%; max-width: 1000px; margin: 0 auto; border-radius: 22px; }
 /* Belum ada src: sembunyikan, jangan tampilkan gambar bawaan dulu. */
-.hero-img:not([src]) { visibility: hidden; aspect-ratio: 3 / 1; }
+.hero-img:not([src]), .hero-img.is-loading { aspect-ratio: auto 3 / 1; }
 
 /* Tabs */
 .tabs { position: sticky; top: var(--header-h); z-index: 20; background: var(--bg); border-bottom: 1px solid var(--line); }
@@ -335,12 +334,13 @@ body:has(.wa-float:not([hidden])) .footer { padding-bottom: 96px; }
 }
 
 /* UX-4: skeleton screen. Ukuran mengikuti konten asli supaya tidak ada layout shift. */
-.sk, .card-media.is-loading, .pthumb.is-loading {
+.sk, .card-media.is-loading, .pthumb.is-loading,
+.brand-logo:not([src]), .brand-logo.is-loading, .hero-img:not([src]), .hero-img.is-loading {
   background: linear-gradient(100deg, #f7ecd0 30%, #fff6de 50%, #f7ecd0 70%);
   background-size: 200% 100%;
   animation: shimmer 1.4s linear infinite;
 }
-@media (prefers-reduced-motion: reduce) { .sk, .card-media.is-loading, .pthumb.is-loading { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .sk, .card-media.is-loading, .pthumb.is-loading, .brand-logo:not([src]), .brand-logo.is-loading, .hero-img:not([src]), .hero-img.is-loading { animation: none; } }
 
 .sk-bar { display: block; max-width: 100%; border-radius: 8px; }
 .sk-line { height: 14px; margin: 4px 0; }                      /* baris teks 15px, tinggi ~22px */

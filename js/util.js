@@ -67,5 +67,12 @@ export const LOGO_DEFAULT = 'assets/logo.jpeg';
 export const BANNER_DEFAULT = 'assets/banner.jpeg';
 export function setImg(img, src) {
   if (!img || !src) return;
-  if (img.getAttribute('src') !== src) img.setAttribute('src', src);
+  if (img.getAttribute('src') === src) return;
+  // Shimmer (skeleton) sampai gambar selesai dimuat atau gagal.
+  img.classList.add('is-loading');
+  const done = () => img.classList.remove('is-loading');
+  img.addEventListener('load', done, { once: true });
+  img.addEventListener('error', done, { once: true });
+  img.setAttribute('src', src);
+  if (img.complete && img.naturalWidth) done();
 }
