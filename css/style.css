@@ -408,7 +408,7 @@ body:has(.wa-float:not([hidden])) .footer { padding-bottom: 96px; }
 .detail-price { margin: 0; font-size: 20px; font-weight: 600; color: var(--brown); }
 .detail-desc { margin: 12px 0 0; white-space: pre-line; overflow-wrap: anywhere; }
 .sheet .ocard-tags { margin: 10px 0 0; }
-.detail-add { margin-top: 18px; }
+.detail-actions { display: grid; gap: 8px; margin-top: 18px; }
 
 .search { padding-top: 12px; }
 .search-box { position: relative; max-width: 820px; margin: 0 auto; }

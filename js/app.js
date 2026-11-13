@@ -58,10 +58,11 @@ function productCard(p, step) {
     p.habis ? h('span', { class: 'badge-sold' }, 'HABIS') : null
   );
   if (img) shimmerOnLoad(media, img);
+  // Kartu hanya membuka detail. Tambah keranjang dan Beli sekarang ada di dialog detail.
   const btn = h('button', {
-    class: 'btn', type: 'button', disabled: p.habis,
-    onclick: (ev) => addToCart(p, ev.currentTarget)
-  }, p.habis ? 'Habis' : 'Tambah');
+    class: 'btn', type: 'button',
+    onclick: () => openDetail(p)
+  }, 'Lihat detail');
 
   const card = h('article', {
     class: 'card' + (p.habis ? ' is-sold' : '') + (step >= 0 ? ' is-enter' : ''),
@@ -88,9 +89,20 @@ function openDetail(p) {
   }
   const src = fotoUrl(p.foto, 900);
   const add = h('button', {
-    class: 'btn btn-solid btn-block detail-add', type: 'button', disabled: p.habis,
+    class: 'btn btn-block', type: 'button', disabled: p.habis,
     onclick: (ev) => { closeDialog(detailDlg); addToCart(p, ev.currentTarget); }
-  }, p.habis ? 'Habis' : 'Tambah');
+  }, p.habis ? 'Habis' : 'Tambah keranjang');
+  // Beli sekarang: masukkan 1 item lalu langsung buka checkout. Bila sudah mentok
+  // MAX_QTY, item tetap ada di keranjang, jadi checkout tetap dibuka.
+  const buy = h('button', {
+    class: 'btn btn-solid btn-block', type: 'button', disabled: p.habis,
+    onclick: () => {
+      if (!cart.add(p)) toast('Maksimal ' + MAX_QTY + ' per produk');
+      else playSfx('tambah');
+      closeDialog(detailDlg);
+      openCheckout();
+    }
+  }, p.habis ? 'Habis' : 'Beli sekarang');
   const desc = String(p.deskripsi || '').trim();
 
   detailDlg.replaceChildren(h('div', { class: 'sheet-inner' },
@@ -105,7 +117,7 @@ function openDetail(p) {
       p.habis ? h('span', { class: 'tag tag-dibatalkan' }, 'Habis') : null),
     // textContent lewat h(): deskripsi tidak pernah dibaca sebagai HTML; baris baru lewat CSS pre-line.
     desc ? h('p', { class: 'detail-desc' }, desc) : null,
-    add
+    h('div', { class: 'detail-actions' }, buy, add)
   ));
   detailDlg.showModal();
 }
@@ -321,7 +333,7 @@ function flashAdded(btn) {
   btn.textContent = '\u2713 Ditambahkan';
   addTimers.set(btn, setTimeout(() => {
     btn.classList.remove('is-added');
-    btn.textContent = 'Tambah';
+    btn.textContent = 'Tambah keranjang';
   }, 1000));
 }
 
