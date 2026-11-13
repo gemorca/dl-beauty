@@ -3,7 +3,7 @@ import { readCache } from './api.js';
 import { session, adminLogin, adminLogout, adminOrders, adminSetStatus } from './admin-api.js';
 import { mountKatalog } from './admin-katalog.js';
 import { mountKeuangan } from './admin-keuangan.js';
-import { toast as showToast, setLoading, bindDialog, closeDialog, createSeen } from './ui.js';
+import { toast as showToast, setLoading, setBar, barFull, bindDialog, closeDialog, createSeen } from './ui.js';
 import { skBoard, skTransaksi } from './skeleton.js';
 
 const $ = (id) => document.getElementById(id);
@@ -354,17 +354,18 @@ async function doAction(o, ke, btn) {
   }
   busy = true;
   document.querySelectorAll('.ocard button').forEach((b) => { b.disabled = true; });
-  setLoading(btn, true);
+  setBar(btn, true);
   try {
     await adminSetStatus(o.id, o.status, ke);
+    await barFull(btn);
     toast('Pesanan #' + o.id + ': ' + (STATUS_LABEL[ke] || ke));
   } catch (e) {
     if (handleAuth(e)) return;
     toast((e && e.message) || 'Gagal mengubah status.');
   } finally {
     busy = false;
-    // Spinner berhenti, tapi tombol tetap nonaktif sampai kartu digambar ulang oleh refresh di bawah.
-    if (btn) { setLoading(btn, false); btn.disabled = true; }
+    // Bar berhenti, tapi tombol tetap nonaktif sampai kartu digambar ulang oleh refresh di bawah.
+    if (btn) { setBar(btn, false); btn.disabled = true; }
   }
   lastKey = '';
   await refresh(true);

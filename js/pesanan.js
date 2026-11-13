@@ -1,6 +1,6 @@
 import { fetchBootstrap, readCache, getOrder, choosePayment, submitReview } from './api.js';
 import { h, rupiah, waLink, stars, tanggal, fotoUrl, parseRekening } from './util.js';
-import { toast as showToast, setLoading } from './ui.js';
+import { toast as showToast, setBar, barFull } from './ui.js';
 import { skPesanan } from './skeleton.js';
 
 const $ = (id) => document.getElementById(id);
@@ -151,15 +151,16 @@ function metodeButtons(daftar, ganti) {
       if (busy) return;
       busy = true;
       btns.forEach((b) => { b.disabled = true; });
-      setLoading(btn, true, 'Memproses…');
+      setBar(btn, true, 'Memproses…');
       try {
         order = await choosePayment(params.id, params.token, m);
+        await barFull(btn);
         render();
         if (ganti) toast('Metode bayar diubah ke ' + m);
       } catch (e) {
         toast((e && e.message) || 'Gagal memilih cara bayar.');
         btns.forEach((b) => { b.disabled = false; });
-        setLoading(btn, false, label);
+        setBar(btn, false, label);
       } finally {
         busy = false;
       }
@@ -267,13 +268,14 @@ function reviewCard(o) {
     errEl.textContent = '';
     if (!picked) { errEl.textContent = 'Pilih bintang 1 sampai 5.'; opts[0].input.focus(); return; }
     busy = true;
-    setLoading(submit, true, 'Mengirim…');
+    setBar(submit, true, 'Mengirim…');
     try {
       order = await submitReview(params.id, params.token, picked, komentar.value.trim());
+      await barFull(submit);
       render();
     } catch (e) {
       errEl.textContent = (e && e.message) || 'Gagal mengirim ulasan.';
-      setLoading(submit, false, 'Kirim ulasan');
+      setBar(submit, false, 'Kirim ulasan');
     } finally {
       busy = false;
     }

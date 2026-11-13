@@ -1,5 +1,4 @@
 import { CONFIG } from './config.js';
-import { track } from './progress.js';
 import { parseRekening } from './util.js';
 
 const KEY = 'dlbeauty_bootstrap_v2';
@@ -163,7 +162,7 @@ async function submitReviewImpl(id, token, bintang, komentar) {
   return post('submitReview', { id, token, bintang, komentar }, 'Gagal mengirim ulasan.');
 }
 
-// Tulis (create/update) tampil dengan progress bar atas layar. Baca (getOrder, bootstrap) tidak.
-export const createOrder = (payload) => track(() => createOrderImpl(payload));
-export const choosePayment = (id, token, metode) => track(() => choosePaymentImpl(id, token, metode));
-export const submitReview = (id, token, bintang, komentar) => track(() => submitReviewImpl(id, token, bintang, komentar));
+// Progress bar sekarang dipasang di tombol pemanggil (lihat setBar/barFull di ui.js), bukan di sini.
+export const createOrder = createOrderImpl;
+export const choosePayment = choosePaymentImpl;
+export const submitReview = submitReviewImpl;

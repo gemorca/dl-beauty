@@ -3,7 +3,7 @@
 // lama tetap tampil selagi memuat), supaya angka selalu sama dengan sheet.
 import { h, rupiah, stars, tanggal } from './util.js';
 import { adminFinance, adminAddExpense, adminReviews, adminDeleteReview } from './admin-api.js';
-import { setLoading, closeDialog } from './ui.js';
+import { setLoading, setBar, barFull, closeDialog } from './ui.js';
 import { skKeuangan, skUlasan } from './skeleton.js';
 
 const CARA_LABEL = { antar: 'Antar', ambil: 'Ambil', cod: 'COD' };
@@ -133,9 +133,10 @@ export function mountKeuangan(ctx) {
       if (!(n >= 1)) { err.textContent = 'Jumlah wajib diisi.'; jumlah.focus(); return; }
       if (k.length < 2) { err.textContent = 'Tulis untuk apa uang ini keluar.'; ket.focus(); return; }
       saving = true;
-      setLoading(simpan, true, 'Menyimpan\u2026');
+      setBar(simpan, true, 'Menyimpan\u2026');
       try {
         const res = await adminAddExpense(n, k, reqId);
+        await barFull(simpan);
         if (!alive) return;
         fin = res;
         reqId = newReqId();
@@ -147,7 +148,7 @@ export function mountKeuangan(ctx) {
         err.textContent = (e && e.message) || 'Gagal menyimpan.';
       } finally {
         saving = false;
-        setLoading(simpan, false, 'Simpan');
+        setBar(simpan, false, 'Simpan');
       }
     });
 
@@ -217,7 +218,7 @@ export function mountKeuangan(ctx) {
       ' akan hilang dari toko. Pelanggan itu bisa menulis ulasan lagi dari halaman pesanannya.', 'Ya, hapus');
     if (!yes) return;
     busy = true;
-    setLoading(btn, true);
+    setLoading(btn, true, 'Memproses\u2026');
     try {
       const res = await adminDeleteReview(u.id);
       if (!alive) return;

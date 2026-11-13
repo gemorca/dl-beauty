@@ -1,7 +1,7 @@
 import { cart, MAX_QTY } from './cart.js';
 import { createOrder, CARA_DEFAULT } from './api.js';
 import { h, rupiah } from './util.js';
-import { setLoading, bindDialog, closeDialog } from './ui.js';
+import { setBar, barFull, bindDialog, closeDialog } from './ui.js';
 
 const PROFILE_KEY = 'dlbeauty_profile_v1';
 const ORDERS_KEY = 'dlbeauty_orders_v1';
@@ -184,9 +184,10 @@ function renderForm() {
     };
 
     busy = true;
-    setLoading(submit, true, 'Mengirim\u2026');
+    setBar(submit, true, 'Mengirim\u2026');
     try {
       const res = await createOrder(payload);
+      await barFull(submit);
       saveJSON(PROFILE_KEY, { nama: v.nama, wa: v.wa, alamat: v.alamat, cara: c.kode });
       const orders = loadJSON(ORDERS_KEY, []);
       orders.unshift({
@@ -204,7 +205,7 @@ function renderForm() {
     } finally {
       if (!leaving) {
         busy = false;
-        setLoading(submit, false, 'Kirim pesanan');
+        setBar(submit, false, 'Kirim pesanan');
       }
     }
   });

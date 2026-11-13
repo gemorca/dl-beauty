@@ -7,8 +7,7 @@ import {
   adminSaveCategories, adminSaveSettings, adminUploadImage
 } from './admin-api.js';
 import { kompres, keBase64 } from './admin-gambar.js';
-import { setLoading, closeDialog } from './ui.js';
-import { createStepbar } from './progress.js';
+import { setLoading, setBar, barFloor, barFull, closeDialog } from './ui.js';
 import { skProduk, skKategori, skTampilan } from './skeleton.js';
 
 // ctx: { panels:{produk,kategori,tampilan}, formDialog, toast, confirmDialog, handleAuth, onSettings }
@@ -61,12 +60,14 @@ export function mountKatalog(ctx) {
   }
 
   // Aksi cepat dari daftar (tanpa formulir): hasilnya toast.
-  async function aksi(fn, pesan, btn) {
+  // hapus=true: spinner + "Memproses…". Selain itu (tambah/ubah): progress bar di bawah tombol.
+  async function aksi(fn, pesan, btn, hapus = false) {
     if (busy) return false;
     busy = true;
-    setLoading(btn, true);
+    if (hapus) setLoading(btn, true, 'Memproses…'); else setBar(btn, true);
     try {
       const res = await fn();
+      if (!hapus) await barFull(btn);
       if (!alive) return false;
       cat = res;
       renderProduk();
@@ -79,7 +80,7 @@ export function mountKatalog(ctx) {
       return false;
     } finally {
       busy = false;
-      setLoading(btn, false);
+      if (hapus) setLoading(btn, false); else setBar(btn, false);
     }
   }
 
@@ -128,7 +129,7 @@ export function mountKatalog(ctx) {
     const yes = await confirmDialog('Hapus produk ini?',
       '"' + p.nama + '" akan dihapus dari toko. Riwayat pesanan yang lama tidak terpengaruh.', 'Ya, hapus');
     if (!yes) return;
-    await aksi(() => adminDeleteProduct(p.id), 'Produk dihapus', btn);
+    await aksi(() => adminDeleteProduct(p.id), 'Produk dihapus', btn, true);
   }
 
   // Satu gambar yang menunggu diunggah. url diisi setelah berhasil, supaya percobaan ulang
@@ -204,7 +205,6 @@ export function mountKatalog(ctx) {
     });
     paintFoto();
 
-    const sb = createStepbar();
     const batal = h('button', { class: 'btn', type: 'button', onclick: () => closeDialog(formDialog) }, 'Batal');
     const simpan = h('button', { class: 'btn btn-solid', type: 'submit', disabled: !adaKategori }, 'Simpan');
 
@@ -219,7 +219,6 @@ export function mountKatalog(ctx) {
         prev,
         h('div', { class: 'foto-side' }, h('div', { class: 'ocard-actions' }, pick, del), file, info)),
       h('label', { class: 'check', for: 'pf-habis' }, habis, h('span', null, 'Tandai habis (tidak bisa dipesan)')),
-      sb.el,
       err,
       h('div', { class: 'confirm-actions' }, batal, simpan)
     );
@@ -234,18 +233,17 @@ export function mountKatalog(ctx) {
       if (!(hg >= 1)) { err.textContent = 'Harga wajib diisi.'; harga.focus(); return; }
       if (!kat.value) { err.textContent = 'Pilih kategori.'; kat.focus(); return; }
       saving = true;
-      setLoading(simpan, true);
       const perluUnggah = Boolean(foto.pending && !foto.pending.url);
-      simpan.textContent = perluUnggah ? 'Mengunggah foto…' : 'Menyimpan…';
-      if (perluUnggah) sb.update(0, 2, 'Mengunggah foto 1/1');
+      setBar(simpan, true, perluUnggah ? 'Mengunggah foto…' : 'Menyimpan…');
       try {
         const url = await pastikanUnggah('produk', foto);
-        if (perluUnggah) sb.update(1, 2, 'Menyimpan produk');
+        if (perluUnggah) barFloor(simpan, 0.5);
         simpan.textContent = 'Menyimpan…';
         const res = await adminSaveProduct({
           id: p ? p.id : '', nama: nm, harga: hg, kategori: kat.value,
           deskripsi: desc.value, foto: url, habis: habis.checked
         });
+        await barFull(simpan);
         if (!alive) return;
         cat = res;
         closeDialog(formDialog);
@@ -256,8 +254,7 @@ export function mountKatalog(ctx) {
         fail(e, err);
       } finally {
         saving = false;
-        sb.hide();
-        setLoading(simpan, false, 'Simpan');
+        setBar(simpan, false, 'Simpan');
         simpan.disabled = !adaKategori;
       }
     });
@@ -289,13 +286,8 @@ export function mountKatalog(ctx) {
       const v = input.value.replace(/\s+/g, ' ').trim();
       if (!v) { err.textContent = 'Isi nama kategori.'; input.focus(); return; }
       if (list.some((k) => k.toLowerCase() === v.toLowerCase())) { err.textContent = 'Kategori itu sudah ada.'; input.focus(); return; }
-      setLoading(tambah, true);
-      try {
-        const ok = await aksi(() => adminSaveCategories([...list, v]), 'Kategori ditambahkan');
-        if (ok) { const baru = document.getElementById('kf-nama'); if (baru) baru.focus(); }
-      } finally {
-        setLoading(tambah, false);
-      }
+      const ok = await aksi(() => adminSaveCategories([...list, v]), 'Kategori ditambahkan', tambah);
+      if (ok) { const baru = document.getElementById('kf-nama'); if (baru) baru.focus(); }
     });
 
     const pindah = (i, arah, btn) => {
@@ -320,7 +312,7 @@ export function mountKatalog(ctx) {
             onclick: async (ev) => {
               const btn = ev.currentTarget;
               const yes = await confirmDialog('Hapus kategori?', 'Kategori "' + k + '" akan dihapus.', 'Ya, hapus');
-              if (yes) aksi(() => adminSaveCategories(list.filter((x) => x !== k), { progress: false }), 'Kategori dihapus', btn);
+              if (yes) aksi(() => adminSaveCategories(list.filter((x) => x !== k)), 'Kategori dihapus', btn, true);
             }
           }, 'Hapus'))
       );
@@ -410,7 +402,6 @@ export function mountKatalog(ctx) {
         h('div', { class: 'ocard-actions' }, pick, del), file, info);
     }
 
-    const sb = createStepbar();
     const simpan = h('button', { class: 'btn btn-solid btn-block', type: 'submit' }, 'Simpan tampilan');
 
     const form = h('form', { novalidate: true },
@@ -427,7 +418,7 @@ export function mountKatalog(ctx) {
       imgBlock('qris', 'Gambar QRIS', 'Ditampilkan ke pelanggan saat bayar. Pastikan kodenya jelas dan tidak terpotong. Kosong = pelanggan belum bisa membayar lewat QRIS.', 800, ''),
       h('label', { for: 'tf-rek', class: 'label' }, 'Rekening bank'), rekening,
       h('p', { class: 'muted field-hint' }, 'Satu baris per bank, format BANK|NOMOR|ATAS NAMA. Contoh: BCA|1234567890|DL BEAUTY. Maksimal 6 baris. Kosong = pelanggan hanya bisa bayar lewat QRIS.'),
-      sb.el, err, simpan);
+      err, simpan);
 
     form.addEventListener('submit', async (ev) => {
       ev.preventDefault();
@@ -436,7 +427,7 @@ export function mountKatalog(ctx) {
       if (nama.value.trim().length < 2) { err.textContent = 'Nama toko wajib diisi.'; nama.focus(); return; }
       if (wa.value.replace(/\D/g, '').length < 9) { err.textContent = 'Nomor WhatsApp admin tidak valid.'; wa.focus(); return; }
       saving = true;
-      setLoading(simpan, true);
+      setBar(simpan, true);
       try {
         const urls = {};
         const perlu = ['logo', 'banner', 'qris'].filter((k) => st[k].pending && !st[k].pending.url);
@@ -446,17 +437,16 @@ export function mountKatalog(ctx) {
           const unggah = perlu.includes(key);
           if (unggah) {
             simpan.textContent = 'Mengunggah ' + key + '…';
-            sb.update(selesai, total, 'Mengunggah ' + key + ' ' + (selesai + 1) + '/' + perlu.length);
           }
           urls[key] = await pastikanUnggah(key, st[key]);
-          if (unggah) selesai += 1;
+          if (unggah) { selesai += 1; barFloor(simpan, selesai / total); }
         }
-        if (perlu.length) sb.update(selesai, total, 'Menyimpan tampilan');
         simpan.textContent = 'Menyimpan…';
         const res = await adminSaveSettings({
           nama_toko: nama.value, tagline: tagline.value, alamat: alamat.value, wa_admin: wa.value,
           logo_url: urls.logo, banner_url: urls.banner, qris_url: urls.qris, rekening: rekening.value
         });
+        await barFull(simpan);
         if (!alive) return;
         cat = res;
         ['logo', 'banner', 'qris'].forEach((k) => { lepasPending(st[k]); st[k].url = res.pengaturan[k + '_url'] || ''; blocks[k](); });
@@ -468,8 +458,7 @@ export function mountKatalog(ctx) {
         fail(e, err);
       } finally {
         saving = false;
-        sb.hide();
-        setLoading(simpan, false, 'Simpan tampilan');
+        setBar(simpan, false, 'Simpan tampilan');
       }
     });
 
