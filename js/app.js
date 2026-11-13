@@ -31,6 +31,10 @@ function applySettings(p) {
   chat.hidden = !link;
   if (link) chat.href = link;
 
+  const float = $('waFloat');
+  float.hidden = !link;
+  if (link) float.href = link;
+
   $('footerText').textContent = [p.tagline, p.alamat].filter(Boolean).join(' \u00b7 ');
 }
 

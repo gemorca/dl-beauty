@@ -2,6 +2,7 @@ import { h, rupiah, waLink, fotoUrl } from './util.js';
 import { readCache } from './api.js';
 import { session, adminLogin, adminLogout, adminOrders, adminSetStatus } from './admin-api.js';
 import { mountKatalog } from './admin-katalog.js';
+import { mountKeuangan } from './admin-keuangan.js';
 
 const $ = (id) => document.getElementById(id);
 const POLL_MS = 15000;
@@ -36,6 +37,7 @@ let soundOn = false;
 let audio = null;
 let ui = null;
 let katalog = null;
+let keu = null;
 
 /* ---------- Util ---------- */
 function toast(msg) {
@@ -127,6 +129,8 @@ function renderLogin(msg) {
   stopPolling();
   if (katalog) katalog.reset();
   katalog = null;
+  if (keu) keu.reset();
+  keu = null;
   data = null; ui = null; lastKey = ''; prevNeed = null; busy = false;
   $('tabsHost').replaceChildren();
   $('soundBtn').hidden = true;
@@ -194,6 +198,8 @@ async function showApp() {
   const tabs = [
     { id: 'pesanan', label: 'Pesanan', extra: badge },
     { id: 'transaksi', label: 'Transaksi' },
+    { id: 'keuangan', label: 'Keuangan' },
+    { id: 'ulasan', label: 'Ulasan' },
     { id: 'produk', label: 'Produk' },
     { id: 'kategori', label: 'Kategori' },
     { id: 'tampilan', label: 'Tampilan' }
@@ -231,12 +237,14 @@ async function showApp() {
   const panelT = h('section', { id: 'panel-transaksi', role: 'tabpanel', 'aria-labelledby': 'tab-transaksi', hidden: true });
   const extra = (id) => h('section', { id: 'panel-' + id, role: 'tabpanel', 'aria-labelledby': 'tab-' + id, hidden: true });
   const panelK = { produk: extra('produk'), kategori: extra('kategori'), tampilan: extra('tampilan') };
+  const panelF = { keuangan: extra('keuangan'), ulasan: extra('ulasan') };
 
-  ui = { tabs, badge, stats, updated, board, panelP, panelT, panels: { pesanan: panelP, transaksi: panelT, ...panelK } };
-  $('app').replaceChildren(panelP, panelT, panelK.produk, panelK.kategori, panelK.tampilan);
+  ui = { tabs, badge, stats, updated, board, panelP, panelT, panels: { pesanan: panelP, transaksi: panelT, ...panelF, ...panelK } };
+  $('app').replaceChildren(panelP, panelT, panelF.keuangan, panelF.ulasan, panelK.produk, panelK.kategori, panelK.tampilan);
   katalog = mountKatalog({
     panels: panelK, formDialog: $('formDialog'), toast, confirmDialog, handleAuth, onSettings: applyBrand
   });
+  keu = mountKeuangan({ panels: panelF, formDialog: $('formDialog'), toast, confirmDialog, handleAuth });
   $('soundBtn').hidden = false;
   $('logoutBtn').hidden = false;
   paintSound();
@@ -258,7 +266,8 @@ function selectTab(id) {
   Object.entries(ui.panels).forEach(([k, el]) => { el.hidden = k !== id; });
   const aktif = ui.tabs.find((t) => t.id === id);
   if (aktif) aktif.el.scrollIntoView({ block: 'nearest', inline: 'center' });
-  if (katalog && id !== 'pesanan' && id !== 'transaksi') katalog.show();
+  if (katalog && ['produk', 'kategori', 'tampilan'].includes(id)) katalog.show();
+  if (keu && (id === 'keuangan' || id === 'ulasan')) keu.show(id);
 }
 
 /* ---------- Kartu pesanan ---------- */
@@ -474,6 +483,8 @@ async function refresh(force) {
     data = next;
     detectNew(next.orders);
     render();
+    // Keuangan ikut segar selagi tab-nya terbuka (status pesanan bisa berubah kapan saja).
+    if (keu && tab === 'keuangan') keu.show('keuangan');
     if (ui) ui.updated.textContent = 'Diperbarui ' + new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
   } catch (e) {
     if (handleAuth(e)) return;

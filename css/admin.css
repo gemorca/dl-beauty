@@ -140,3 +140,19 @@ select.input { appearance: auto; }
 
 /* Tombol Simpan/Batal di dialog produk selalu terlihat, walau formulir panjang di HP */
 #formDialog .confirm-actions { position: sticky; bottom: -24px; margin: 18px -20px -24px; padding: 12px 20px 16px; background: var(--surface); border-top: 1px solid var(--line); }
+
+/* Tahap 7: keuangan dan ulasan */
+.tag-masuk { background: #dcebdc; color: #1f5a2a; }
+.tag-keluar { background: #f9e2e2; color: #8c2020; }
+.is-neg { color: #a02323; }
+.trow-total.is-out { color: #a02323; }
+.fin-note { margin: 0 0 6px; font-size: 13px; }
+.fin-sub { margin-top: 24px; margin-bottom: 0; font-size: 20px; }
+.stats-2 { grid-template-columns: repeat(2, 1fr); max-width: 420px; }
+.rlist { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 4px; }
+@media (min-width: 900px) { .rlist { grid-template-columns: 1fr 1fr; gap: 14px; } }
+.rcard { min-width: 0; padding: 14px 16px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.rcard-stars { margin: 6px 0 4px; color: var(--gold); font-size: 18px; letter-spacing: .1em; }
+.rcard-text { margin: 0 0 4px; overflow-wrap: anywhere; }
+.rcard-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-top: 10px; }
+.toolbar + .stats { margin-top: 12px; }

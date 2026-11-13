@@ -243,3 +243,20 @@ textarea.input { resize: vertical; min-height: 84px; }
   .step-label { font-size: 10px; letter-spacing: .02em; }
   .page-title { font-size: 25px; }
 }
+
+/* Tombol WhatsApp melayang (halaman publik) */
+.wa-float {
+  position: fixed; z-index: 25; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  min-width: 56px; height: 56px; padding: 0 16px; border-radius: 999px;
+  background: var(--brown-deep); color: #fff; text-decoration: none;
+  font: 600 14px/1 var(--sans); box-shadow: 0 8px 24px rgba(59, 34, 8, .32);
+  transition: transform .15s ease, background-color .15s ease;
+}
+.wa-float:hover { background: var(--brown); transform: translateY(-2px); }
+.wa-float:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
+.wa-float-icon { flex: none; color: var(--tint); }
+.wa-float-label { display: none; }
+@media (min-width: 560px) { .wa-float-label { display: inline; } }
+body:has(.wa-float:not([hidden])) .footer { padding-bottom: 96px; }
+@media (prefers-reduced-motion: reduce) { .wa-float { transition: none; } .wa-float:hover { transform: none; } }

@@ -52,3 +52,12 @@ export function adminSaveCategories(kategori) { return call('adminSaveCategories
 export function adminSaveSettings(p) { return call('adminSaveSettings', p, true); }
 // data = base64 tanpa awalan "data:". Balasan: {url}
 export function adminUploadImage(jenis, mime, data) { return call('adminUploadImage', { jenis, mime, data }, true); }
+
+/* ---------- Tahap 7: keuangan dan ulasan ---------- */
+// Keuangan: {tz, hari_ini, sekarang, ringkasan{masuk,keluar,laba,n_masuk,n_keluar}, hari[]}.
+// reqId mencegah catatan ganda bila permintaan dikirim ulang.
+export function adminFinance() { return call('adminFinance', {}, true); }
+export function adminAddExpense(jumlah, keterangan, reqId) { return call('adminAddExpense', { jumlah, keterangan, req_id: reqId }, true); }
+// Ulasan: {jumlah, rata, daftar[{id, waktu, nama, bintang, komentar, pesanan_id}]}.
+export function adminReviews() { return call('adminReviews', {}, true); }
+export function adminDeleteReview(id) { return call('adminDeleteReview', { id }, true); }
