@@ -4,6 +4,7 @@ import { session, adminLogin, adminLogout, adminOrders, adminSetStatus } from '.
 import { mountKatalog } from './admin-katalog.js';
 import { mountKeuangan } from './admin-keuangan.js';
 import { toast as showToast, setLoading } from './ui.js';
+import { skBoard, skTransaksi } from './skeleton.js';
 
 const $ = (id) => document.getElementById(id);
 const POLL_MS = 15000;
@@ -212,21 +213,18 @@ async function showApp() {
   });
   $('tabsHost').replaceChildren(h('nav', { class: 'tabs' }, list));
 
-  const stats = {
-    hari: h('strong', { class: 'stat-val' }, '–'),
-    omzet: h('strong', { class: 'stat-val' }, '–'),
-    perlu: h('strong', { class: 'stat-val' }, '–'),
-    kemas: h('strong', { class: 'stat-val' }, '–')
-  };
+  // Angka statistik tampil sebagai skeleton sampai data pertama datang (lihat renderPesanan).
+  const skStat = () => h('strong', { class: 'stat-val sk sk-bar sk-statval sk-w50' });
+  const stats = { hari: skStat(), omzet: skStat(), perlu: skStat(), kemas: skStat() };
   const statCard = (label, el) => h('div', { class: 'stat' }, h('span', { class: 'stat-label' }, label), el);
   const updated = h('p', { class: 'muted updated', 'aria-live': 'off' });
-  const board = h('div', { class: 'board' });
+  const board = h('div', { class: 'board' }, skBoard());
   const panelP = h('section', { id: 'panel-pesanan', role: 'tabpanel', 'aria-labelledby': 'tab-pesanan' },
     h('div', { class: 'stats' },
       statCard('Pesanan hari ini', stats.hari), statCard('Omzet hari ini', stats.omzet),
       statCard('Perlu konfirmasi', stats.perlu), statCard('Sedang dikemas', stats.kemas)),
     updated, board);
-  const panelT = h('section', { id: 'panel-transaksi', role: 'tabpanel', 'aria-labelledby': 'tab-transaksi', hidden: true });
+  const panelT = h('section', { id: 'panel-transaksi', role: 'tabpanel', 'aria-labelledby': 'tab-transaksi', hidden: true }, skTransaksi());
   const extra = (id) => h('section', { id: 'panel-' + id, role: 'tabpanel', 'aria-labelledby': 'tab-' + id, hidden: true });
   const panelK = { produk: extra('produk'), kategori: extra('kategori'), tampilan: extra('tampilan') };
   const panelF = { keuangan: extra('keuangan'), ulasan: extra('ulasan') };
@@ -334,6 +332,7 @@ function renderPesanan(d) {
   const kemas = orders.filter((o) => o.status === 'DIKEMAS');
   const riwayat = orders.filter((o) => o.status === 'DIKIRIM' || o.status === 'DIBATALKAN');
 
+  Object.values(ui.stats).forEach((el) => { el.className = 'stat-val'; });
   ui.stats.hari.textContent = String(today.length);
   ui.stats.omzet.textContent = rupiah(sum(today.filter((o) => o.status === 'DIKEMAS' || o.status === 'DIKIRIM')));
   ui.stats.perlu.textContent = String(need.length);

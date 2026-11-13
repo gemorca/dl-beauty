@@ -4,6 +4,7 @@
 import { h, rupiah, stars, tanggal } from './util.js';
 import { adminFinance, adminAddExpense, adminReviews, adminDeleteReview } from './admin-api.js';
 import { setLoading } from './ui.js';
+import { skKeuangan, skUlasan } from './skeleton.js';
 
 const CARA_LABEL = { antar: 'Antar', ambil: 'Ambil', cod: 'COD' };
 
@@ -83,7 +84,7 @@ export function mountKeuangan(ctx) {
   async function loadFin() {
     if (loadingFin) return;
     loadingFin = true;
-    if (!fin) panels.keuangan.replaceChildren(h('p', { class: 'state' }, 'Memuat\u2026'));
+    if (!fin) panels.keuangan.replaceChildren(...skKeuangan());
     try {
       const res = await adminFinance();
       if (!alive) return;
@@ -191,7 +192,7 @@ export function mountKeuangan(ctx) {
   async function loadRev() {
     if (loadingRev) return;
     loadingRev = true;
-    if (!rev) panels.ulasan.replaceChildren(h('p', { class: 'state' }, 'Memuat\u2026'));
+    if (!rev) panels.ulasan.replaceChildren(...skUlasan());
     try {
       const res = await adminReviews();
       if (!alive) return;

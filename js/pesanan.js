@@ -1,6 +1,7 @@
 import { fetchBootstrap, readCache, getOrder, choosePayment, submitReview } from './api.js';
 import { h, rupiah, waLink, stars, tanggal, fotoUrl } from './util.js';
 import { toast as showToast, setLoading } from './ui.js';
+import { skPesanan } from './skeleton.js';
 
 const $ = (id) => document.getElementById(id);
 const ORDERS_KEY = 'dlbeauty_orders_v1';
@@ -302,7 +303,7 @@ async function init() {
   if (!params) { renderProblem('Link pesanan tidak lengkap atau tidak valid.'); return; }
 
   const load = async () => {
-    $('view').replaceChildren(h('div', { class: 'skeleton skeleton-page', 'aria-hidden': 'true' }));
+    $('view').replaceChildren(...skPesanan());
     const [ord, boot] = await Promise.allSettled([getOrder(params.id, params.token), fetchBootstrap()]);
     if (boot.status === 'fulfilled') { pengaturan = boot.value.pengaturan || {}; applySettings(pengaturan); }
     if (ord.status === 'rejected') {

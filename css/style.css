@@ -91,7 +91,6 @@ a { color: inherit; }
 .card-price { margin: 0 0 10px; font-weight: 600; color: var(--brown); }
 .card .btn { width: 100%; margin-top: auto; }
 
-.skeleton { aspect-ratio: 3 / 4.6; border-radius: var(--radius); background: linear-gradient(100deg, #f7ecd0 30%, #fff6de 50%, #f7ecd0 70%); background-size: 200% 100%; animation: shimmer 1.4s linear infinite; }
 @keyframes shimmer { to { background-position: -200% 0; } }
 
 /* Ulasan */
@@ -130,7 +129,6 @@ a { color: inherit; }
 }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  .skeleton { animation: none; }
 }
 
 /* Keranjang */
@@ -202,7 +200,6 @@ textarea.input { resize: vertical; min-height: 84px; }
 /* Halaman status pesanan */
 .page-narrow { max-width: 600px; padding-bottom: 40px; }
 .page-title { margin: 24px 0 4px; font-family: var(--serif); font-weight: 600; font-size: 28px; color: var(--brown-deep); }
-.skeleton-page { aspect-ratio: auto; height: 420px; margin-top: 24px; }
 .page-narrow .success-id { margin: 0 0 18px; }
 .page-narrow .btn-block { display: flex; margin-top: 14px; }
 
@@ -337,3 +334,64 @@ body:has(.wa-float:not([hidden])) .footer { padding-bottom: 96px; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
 }
+
+/* UX-4: skeleton screen. Ukuran mengikuti konten asli supaya tidak ada layout shift. */
+.sk, .card-media.is-loading, .pthumb.is-loading {
+  background: linear-gradient(100deg, #f7ecd0 30%, #fff6de 50%, #f7ecd0 70%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) { .sk, .card-media.is-loading, .pthumb.is-loading { animation: none; } }
+
+.sk-bar { display: block; max-width: 100%; border-radius: 8px; }
+.sk-line { height: 14px; margin: 4px 0; }                      /* baris teks 15px, tinggi ~22px */
+.sk-sm { height: 12px; margin: 3px 0; }
+.sk-title { width: 160px; height: 22px; margin: 7px 0 21px; }  /* h2 .section-title: 36px + 14px */
+.admin .sk-title { margin-bottom: 17px; }                      /* admin: 36px + 10px */
+.sk-subtitle { width: 40%; height: 18px; margin: 30px 0 6px; }
+.sk-label { width: 90px; height: 12px; margin: 17px 0 9px; }   /* .label: 18px + 14px + 6px */
+.sk-input { height: 49px; border-radius: 14px; }
+.sk-pill { height: 24px; border-radius: 999px; }
+.sk-btn { width: 132px; height: 40px; border-radius: 999px; }
+.sk-btn-m { width: 84px; }
+.sk-btn-s { width: 72px; }
+.sk-sq { width: 40px; }
+.sk-tag { width: 64px; }
+.sk-total { width: 80px; }
+.sk-statlabel { height: 12px; margin: 3px 0; }                 /* .stat-label: 18px */
+.sk-statval { height: 22px; margin: 3px 0; }                   /* .stat-val: 27,6px */
+.sk-stars { height: 16px; margin: 8px 0 6px; }
+.sk-dayhead { width: 45%; height: 18px; margin: 4.5px 0 12.5px; }
+.sk-colhead { width: 50%; height: 18px; }
+.sk-count { width: 26px; height: 26px; border-radius: 999px; }
+.sk-krow-main { flex: 1; }
+.trow .sk-tag, .trow .sk-total { grid-column: 2; justify-self: end; }
+.trow .sk-tag { grid-row: 1; }
+.trow .sk-total { grid-row: 2; }
+.updated { min-height: 18px; }
+@media (max-width: 420px) { .sk-statval { height: 17px; } }
+
+/* Publik: kartu, pill tab, ulasan */
+.card .sk-btn { width: 100%; margin-top: auto; }
+.sk-name { height: 14px; margin: 13.5px 0 5.5px; }             /* .card-name: 10 + 21 + 2 */
+.sk-price { height: 15px; margin: 3.75px 0 13.75px; }          /* .card-price: 22,5 + 10 */
+.sk-tabpill { flex: none; align-self: center; height: 28px; border-radius: 999px; }
+.sk-tabpill:nth-child(1) { width: 84px; }
+.sk-tabpill:nth-child(2) { width: 72px; }
+.sk-tabpill:nth-child(3) { width: 100px; }
+.sk-tabpill:nth-child(4) { width: 80px; }
+.sk-score { width: 56px; height: 44px; }
+.sk-rtext { width: 130px; }
+
+/* Halaman pesanan */
+.sk-pagetitle { width: 60%; height: 26px; margin: 32px 0 12px; }  /* h1: 24 + 42 + 4 */
+.sk-pageid { width: 40%; height: 18px; margin: 6px 0 24px; }
+.sk-dot { position: relative; z-index: 1; width: 32px; height: 32px; border-radius: 50%; }
+.sk-steplabel { width: 60%; height: 11px; margin: 2.75px 0; }
+.sk-ptitle { width: 50%; height: 18px; margin: 5px 0 15px; }
+
+/* Gambar yang belum selesai dimuat */
+.card-media.is-loading img, .pthumb.is-loading img { opacity: 0; }
+
+.sk-w30 { width: 30%; } .sk-w40 { width: 40%; } .sk-w50 { width: 50%; }
+.sk-w60 { width: 60%; } .sk-w80 { width: 80%; } .sk-w100 { width: 100%; }

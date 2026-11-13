@@ -1,5 +1,5 @@
 import { fetchBootstrap, readCache } from './api.js';
-import { h, rupiah, waLink, slug, stars, tanggal, fotoUrl } from './util.js';
+import { h, rupiah, waLink, slug, stars, tanggal, fotoUrl, shimmerOnLoad } from './util.js';
 import { cart, MAX_QTY } from './cart.js';
 import { initCheckout, setCheckoutData, openCheckout } from './checkout.js';
 import { initAudio, playSfx } from './suara.js';
@@ -36,12 +36,12 @@ function applySettings(p) {
 /* ---------- Produk ---------- */
 function productCard(p) {
   const src = fotoUrl(p.foto);
+  const img = src ? h('img', { src, alt: p.nama, loading: 'lazy', decoding: 'async' }) : null;
   const media = h('div', { class: 'card-media' },
-    src
-      ? h('img', { src, alt: p.nama, loading: 'lazy', decoding: 'async' })
-      : h('span', { class: 'card-ph', 'aria-hidden': 'true' }, 'DL'),
+    img || h('span', { class: 'card-ph', 'aria-hidden': 'true' }, 'DL'),
     p.habis ? h('span', { class: 'badge-sold' }, 'HABIS') : null
   );
+  if (img) shimmerOnLoad(media, img);
   const btn = h('button', {
     class: 'btn', type: 'button', disabled: p.habis,
     onclick: (ev) => addToCart(p, ev.currentTarget)
@@ -164,6 +164,7 @@ function render(data) {
 
 function renderError(err, hasData) {
   if (hasData) { toast('Gagal memperbarui data'); return; }
+  $('tabs').replaceChildren(); // buang pill skeleton
   $('content').replaceChildren(
     h('div', { class: 'state' },
       h('p', null, 'Data toko belum bisa dimuat.'),

@@ -44,3 +44,12 @@ export function fotoUrl(url, lebar) {
   const m = s.match(/drive\.google\.com\/file\/d\/([\w-]+)/) || s.match(/drive\.google\.com\/(?:uc|open)\?[^#]*id=([\w-]+)/);
   return m ? 'https://lh3.googleusercontent.com/d/' + m[1] + '=w' + (lebar || 600) : s;
 }
+
+// Shimmer di kotak gambar sampai gambarnya selesai dimuat (atau gagal).
+export function shimmerOnLoad(box, img) {
+  box.classList.add('is-loading');
+  const done = () => box.classList.remove('is-loading');
+  img.addEventListener('load', done, { once: true });
+  img.addEventListener('error', done, { once: true });
+  if (img.complete && img.naturalWidth) done();
+}

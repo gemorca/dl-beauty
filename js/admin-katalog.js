@@ -1,7 +1,7 @@
 // Panel admin Tahap 6: Produk, Kategori, Tampilan.
 // Dimuat oleh admin.js. Data katalog dimuat sekali saat salah satu tab ini dibuka;
 // setiap perubahan ke server membalas katalog terbaru, jadi layar selalu sama dengan sheet.
-import { h, rupiah, fotoUrl } from './util.js';
+import { h, rupiah, fotoUrl, shimmerOnLoad } from './util.js';
 import {
   adminCatalog, adminSaveProduct, adminSetSold, adminDeleteProduct,
   adminSaveCategories, adminSaveSettings, adminUploadImage
@@ -9,6 +9,7 @@ import {
 import { kompres, keBase64 } from './admin-gambar.js';
 import { setLoading } from './ui.js';
 import { createStepbar } from './progress.js';
+import { skProduk, skKategori, skTampilan } from './skeleton.js';
 
 // ctx: { panels:{produk,kategori,tampilan}, formDialog, toast, confirmDialog, handleAuth, onSettings }
 export function mountKatalog(ctx) {
@@ -26,7 +27,8 @@ export function mountKatalog(ctx) {
   async function load() {
     if (loading) return;
     loading = true;
-    setAll(() => h('p', { class: 'state' }, 'Memuat…'));
+    const sk = { produk: skProduk, kategori: skKategori, tampilan: skTampilan };
+    Object.entries(panels).forEach(([k, p]) => p.replaceChildren(...sk[k]()));
     try {
       const res = await adminCatalog();
       if (!alive) return;
@@ -87,9 +89,11 @@ export function mountKatalog(ctx) {
   function produkCard(p) {
     const src = fotoUrl(p.foto, 300);
     const terdaftar = cat.kategori.includes(p.kategori);
+    const img = src ? h('img', { src, alt: '', loading: 'lazy', decoding: 'async' }) : null;
+    const thumb = h('div', { class: 'pthumb' }, img || h('span', { class: 'card-ph', 'aria-hidden': 'true' }, 'DL'));
+    if (img) shimmerOnLoad(thumb, img);
     return h('article', { class: 'pcard' + (p.habis ? ' is-sold' : '') },
-      h('div', { class: 'pthumb' },
-        src ? h('img', { src, alt: '', loading: 'lazy', decoding: 'async' }) : h('span', { class: 'card-ph', 'aria-hidden': 'true' }, 'DL')),
+      thumb,
       h('div', { class: 'pbody' },
         h('strong', { class: 'pname' }, p.nama),
         h('span', { class: 'pprice' }, rupiah(p.harga)),
