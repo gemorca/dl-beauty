@@ -62,3 +62,10 @@ export function shimmerOnLoad(box, img) {
   img.addEventListener('error', done, { once: true });
   if (img.complete && img.naturalWidth) done();
 }
+// Gambar bawaan dan pemasangan src tanpa memuat ulang bila URL sama.
+export const LOGO_DEFAULT = 'assets/logo.jpeg';
+export const BANNER_DEFAULT = 'assets/banner.jpeg';
+export function setImg(img, src) {
+  if (!img || !src) return;
+  if (img.getAttribute('src') !== src) img.setAttribute('src', src);
+}

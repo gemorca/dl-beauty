@@ -1,5 +1,5 @@
 import { fetchBootstrap, readCache, getOrder, choosePayment, submitReview } from './api.js';
-import { h, rupiah, waLink, stars, tanggal, fotoUrl, parseRekening } from './util.js';
+import { h, rupiah, waLink, stars, tanggal, fotoUrl, parseRekening, setImg, LOGO_DEFAULT } from './util.js';
 import { toast as showToast, setBar, barFull } from './ui.js';
 import { skPesanan } from './skeleton.js';
 
@@ -41,7 +41,7 @@ function readParams() {
 function applySettings(p) {
   const nama = p.nama_toko || 'DL BEAUTY';
   $('brandName').textContent = nama;
-  if (p.logo_url) $('brandLogo').src = fotoUrl(p.logo_url);
+  setImg($('brandLogo'), p.logo_url ? fotoUrl(p.logo_url) : LOGO_DEFAULT);
   document.title = (order ? 'Pesanan #' + order.id + ' | ' : 'Pesanan | ') + nama;
 }
 
@@ -379,6 +379,7 @@ async function init() {
     $('view').replaceChildren(...skPesanan());
     const [ord, boot] = await Promise.allSettled([getOrder(params.id, params.token), fetchBootstrap()]);
     if (boot.status === 'fulfilled') { pengaturan = boot.value.pengaturan || {}; applySettings(pengaturan); }
+    else if (!cached) applySettings({}); // gagal dan tanpa cache: baru pakai logo bawaan
     if (ord.status === 'rejected') {
       renderProblem((ord.reason && ord.reason.message) || 'Pesanan belum bisa dimuat.', load);
       return;

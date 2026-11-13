@@ -1,5 +1,5 @@
-import { h, rupiah, waLink, fotoUrl, tanggal } from './util.js';
-import { readCache } from './api.js';
+import { h, rupiah, waLink, fotoUrl, tanggal, setImg, LOGO_DEFAULT } from './util.js';
+import { readCache, fetchBootstrap } from './api.js';
 import { session, adminLogin, adminLogout, adminOrders, adminSetStatus } from './admin-api.js';
 import { mountKatalog } from './admin-katalog.js';
 import { mountKeuangan } from './admin-keuangan.js';
@@ -213,7 +213,7 @@ function brandName() {
 // Dipanggil setelah Tampilan disimpan: header admin ikut nama dan logo baru.
 function applyBrand(p) {
   if (p.nama_toko) $('brandName').textContent = p.nama_toko;
-  $('brandLogo').src = p.logo_url ? fotoUrl(p.logo_url, 200) : 'assets/logo.jpeg';
+  setImg($('brandLogo'), p.logo_url ? fotoUrl(p.logo_url, 200) : LOGO_DEFAULT);
   if (ui) document.title = document.title.replace(/Admin \| .*$/, 'Admin | ' + brandName());
 }
 
@@ -567,9 +567,9 @@ async function logout() {
 
 async function init() {
   const c = readCache();
-  if (c && c.pengaturan) {
-    if (c.pengaturan.nama_toko) $('brandName').textContent = c.pengaturan.nama_toko;
-  }
+  if (c && c.pengaturan) applyBrand(c.pengaturan);
+  // Logo terbaru dari server; logo bawaan hanya bila server juga tidak punya.
+  fetchBootstrap().then((d) => applyBrand(d.pengaturan || {})).catch(() => { if (!c) applyBrand({}); });
   bindDialog($('confirmDialog'));
   bindDialog($('formDialog'));
   $('soundBtn').addEventListener('click', toggleSound);

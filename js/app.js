@@ -1,5 +1,5 @@
 import { fetchBootstrap, readCache } from './api.js';
-import { h, rupiah, waLink, slug, stars, tanggal, fotoUrl, shimmerOnLoad } from './util.js';
+import { h, rupiah, waLink, slug, stars, tanggal, fotoUrl, shimmerOnLoad, setImg, LOGO_DEFAULT, BANNER_DEFAULT } from './util.js';
 import { cart, MAX_QTY } from './cart.js';
 import { initCheckout, setCheckoutData, openCheckout } from './checkout.js';
 import { openRiwayat } from './riwayat.js';
@@ -31,8 +31,9 @@ function applySettings(p) {
   const nama = p.nama_toko || 'DL BEAUTY';
   document.title = nama;
   $('brandName').textContent = nama;
-  if (p.logo_url) $('brandLogo').src = fotoUrl(p.logo_url);
-  if (p.banner_url) $('banner').src = fotoUrl(p.banner_url, 2400);
+  // Bawaan hanya dipakai bila pengaturan memang kosong; src tidak pernah diisi lebih dulu di HTML.
+  setImg($('brandLogo'), p.logo_url ? fotoUrl(p.logo_url) : LOGO_DEFAULT);
+  setImg($('banner'), p.banner_url ? fotoUrl(p.banner_url, 2400) : BANNER_DEFAULT);
   $('banner').alt = 'Banner ' + nama;
 
   const chat = $('chatAdmin');
@@ -162,15 +163,63 @@ function reviewSection(u) {
 }
 
 /* ---------- Tab ---------- */
+let activeId = '';
+let navAnim = 0;   // id requestAnimationFrame animasi scroll vertikal; 0 = tidak jalan
+let navLock = false; // true selama animasi: observer tidak boleh mengganti tab aktif
+
 function setActive(id) {
+  if (id === activeId && document.querySelector('.tab.is-active')) return;
+  activeId = id;
+  let active = null;
   document.querySelectorAll('.tab').forEach((t) => {
     const on = t.dataset.target === id;
     t.classList.toggle('is-active', on);
-    if (on) t.setAttribute('aria-current', 'true'); else t.removeAttribute('aria-current');
+    if (on) { t.setAttribute('aria-current', 'true'); active = t; } else t.removeAttribute('aria-current');
   });
-  const active = document.querySelector('.tab.is-active');
-  if (active) active.scrollIntoView({ block: 'nearest', inline: 'center' });
+  if (!active) return;
+  // Geser strip tab secara horizontal saja. scrollIntoView ikut menggeser halaman secara vertikal
+  // dan membatalkan animasi scroll yang sedang jalan; itu penyebab pindah kategori terasa kasar.
+  const box = $('tabs');
+  const r = active.getBoundingClientRect();
+  const b = box.getBoundingClientRect();
+  const left = box.scrollLeft + (r.left - b.left) - (b.width - r.width) / 2;
+  box.scrollTo({ left, behavior: navAnim ? 'auto' : 'smooth' });
 }
+
+const easeInOut = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+
+function stopNav() {
+  if (navAnim) cancelAnimationFrame(navAnim);
+  navAnim = 0;
+  navLock = false;
+}
+
+// Scroll vertikal dengan easing sendiri: sama di semua browser mobile, satu animasi, tanpa saling tabrak.
+function scrollToSection(el, onDone) {
+  stopNav();
+  const margin = parseFloat(getComputedStyle(el).scrollMarginTop) || 0;
+  const max = document.documentElement.scrollHeight - innerHeight;
+  const from = scrollY;
+  const to = Math.max(0, Math.min(max, el.getBoundingClientRect().top + from - margin));
+  const dist = to - from;
+  const calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (calm || Math.abs(dist) < 2) { scrollTo(0, to); onDone(); return; }
+  const dur = Math.max(380, Math.min(800, Math.abs(dist) * 0.45));
+  const t0 = performance.now();
+  navLock = true;
+  const step = (now) => {
+    const k = Math.min(1, (now - t0) / dur);
+    scrollTo(0, from + dist * easeInOut(k));
+    if (k < 1) { navAnim = requestAnimationFrame(step); return; }
+    navAnim = 0;
+    navLock = false;
+    onDone();
+  };
+  navAnim = requestAnimationFrame(step);
+}
+
+// Sentuhan atau roda dari pengguna langsung menghentikan animasi.
+['touchstart', 'wheel', 'keydown'].forEach((ev) => addEventListener(ev, stopNav, { passive: true }));
 
 function buildTabs(entries) {
   tabEntries = entries;
@@ -181,10 +230,8 @@ function buildTabs(entries) {
         ev.preventDefault();
         const el = $(e.id);
         if (!el) return;
-        const calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
-        el.scrollIntoView({ behavior: calm ? 'auto' : 'smooth', block: 'start' });
-        history.replaceState(null, '', '#' + e.id);
-        setActive(e.id);
+        setActive(e.id); // tab langsung berpindah; observer dikunci sampai animasi selesai
+        scrollToSection(el, () => history.replaceState(null, '', '#' + e.id));
       }
     }, e.label)
   ));
@@ -194,6 +241,7 @@ function buildTabs(entries) {
 function observeVisible() {
   if (observer) observer.disconnect();
   observer = new IntersectionObserver((list) => {
+    if (navLock) return;
     list.forEach((en) => { if (en.isIntersecting) setActive(en.target.id); });
   }, { rootMargin: '-25% 0px -65% 0px' });
   const visible = tabEntries.filter((e) => { const el = $(e.id); return el && !el.hidden; });
@@ -316,6 +364,7 @@ function armReveal() {
 function renderError(err, hasData) {
   if (hasData) { toast('Gagal memperbarui data'); return; }
   $('tabs').replaceChildren(); // buang pill skeleton
+  applySettings({}); // tanpa cache dan tanpa jaringan: baru pakai logo dan banner bawaan
   $('content').replaceChildren(
     h('div', { class: 'state' },
       h('p', null, 'Data toko belum bisa dimuat.'),

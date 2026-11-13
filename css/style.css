@@ -20,7 +20,7 @@
 }
 
 *, *::before, *::after { box-sizing: border-box; }
-html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+html { -webkit-text-size-adjust: 100%; } /* scroll halus dikerjakan JS (app.js); CSS smooth bentrok */
 body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 15px; line-height: 1.5; }
 img { display: block; max-width: 100%; }
 a { color: inherit; }
@@ -37,6 +37,7 @@ a { color: inherit; }
   border-bottom: 1px solid var(--line);
 }
 .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; min-width: 0; }
+.brand-logo:not([src]) { visibility: hidden; }
 .brand-logo { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; object-position: 50% 35%; background: #000; flex: none; }
 .brand-name { font-family: var(--sans); font-weight: 700; font-size: 20px; color: var(--brown-deep); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
@@ -53,10 +54,12 @@ a { color: inherit; }
 /* Banner */
 .hero { padding-top: 20px; padding-bottom: 8px; }
 .hero-img { width: 100%; max-width: 1000px; margin: 0 auto; border-radius: 22px; }
+/* Belum ada src: sembunyikan, jangan tampilkan gambar bawaan dulu. */
+.hero-img:not([src]) { visibility: hidden; aspect-ratio: 3 / 1; }
 
 /* Tabs */
 .tabs { position: sticky; top: var(--header-h); z-index: 20; background: var(--bg); border-bottom: 1px solid var(--line); }
-.tabs-inner { display: flex; align-items: center; gap: 8px; height: var(--tabs-h); overflow-x: auto; scrollbar-width: none; }
+.tabs-inner { overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; display: flex; align-items: center; gap: 8px; height: var(--tabs-h); overflow-x: auto; scrollbar-width: none; }
 .tabs-inner::-webkit-scrollbar { display: none; }
 .tab {
   flex: none; display: inline-flex; align-items: center; height: 34px; padding: 0 14px;
@@ -126,9 +129,6 @@ a { color: inherit; }
 @media (max-width: 560px) {
   .brand-name { font-size: 18px; }
   .btn { padding: 0 14px; }
-}
-@media (prefers-reduced-motion: reduce) {
-  html { scroll-behavior: auto; }
 }
 
 /* Keranjang */
