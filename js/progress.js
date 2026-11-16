@@ -1,15 +1,3 @@
-// Progress bar untuk proses tulis (create/update). Hapus dan pembacaan data tidak memakainya.
-//
-// - track(fn): jalankan fn (fungsi async) dan tampilkan bar tipis di atas layar selama prosesnya.
-//   fetch tidak punya progress unggah, jadi bar naik pelan sampai ±90% lalu penuh saat selesai.
-//   Permintaan beruntun (mis. unggah gambar lalu simpan) memakai satu bar yang sama:
-//   bar baru dianggap selesai bila tidak ada permintaan baru dalam FINISH_DELAY ms.
-// - createStepbar(): bar kecil di dalam form untuk proses bertahap (mis. "Mengunggah banner 2/3").
-//   Langkah selesai juga menaikkan batas bawah bar atas.
-//
-// Bar atas memakai Popover API (top layer) supaya tetap terlihat di atas <dialog> modal.
-// Browser tanpa Popover API tetap jalan; bar hanya bisa tertutup dialog, sementara spinner
-// di tombol dan bar kecil di form tetap tampil.
 import { h } from './util.js';
 
 const TRICKLE_MS = 220;
@@ -22,8 +10,8 @@ const FADE_MS = 300;
 
 let el = null;
 let bar = null;
-let active = 0;       // jumlah permintaan yang sedang berjalan
-let running = false;  // satu sesi bar (bisa mencakup beberapa permintaan)
+let active = 0;
+let running = false;
 let value = 0;
 let floor = 0;
 let failed = false;
@@ -43,11 +31,11 @@ function paint() {
 }
 
 function openLayer() {
-  try { if (el.showPopover && !el.matches(':popover-open')) el.showPopover(); } catch (e) { /* abaikan */ }
+  try { if (el.showPopover && !el.matches(':popover-open')) el.showPopover(); } catch (e) { }
 }
 
 function closeLayer() {
-  try { if (el.hidePopover && el.matches(':popover-open')) el.hidePopover(); } catch (e) { /* abaikan */ }
+  try { if (el.hidePopover && el.matches(':popover-open')) el.hidePopover(); } catch (e) { }
 }
 
 function tick() {
@@ -58,7 +46,7 @@ function tick() {
 
 function begin() {
   active += 1;
-  if (finishTimer) { clearTimeout(finishTimer); finishTimer = 0; } // sambung sesi yang menunggu selesai
+  if (finishTimer) { clearTimeout(finishTimer); finishTimer = 0; }
   if (running) return;
   ensure();
   clearTimeout(hideTimer);
@@ -69,7 +57,7 @@ function begin() {
   value = 0;
   bar.style.transition = 'none';
   paint();
-  void bar.offsetWidth; // terapkan posisi awal tanpa transisi
+  void bar.offsetWidth;
   bar.style.transition = '';
   openLayer();
   el.classList.add('is-active');
@@ -97,7 +85,6 @@ function end(ok) {
   if (active === 0 && running) finishTimer = setTimeout(finish, FINISH_DELAY);
 }
 
-// Naikkan batas bawah bar (0..1 dari proses bertahap). Tidak pernah menurunkan.
 export function setFloor(frac) {
   floor = Math.max(floor, Math.min(1, Math.max(0, frac)) * CAP);
   if (running) { value = Math.max(value, floor); paint(); }

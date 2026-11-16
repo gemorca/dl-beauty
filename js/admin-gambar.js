@@ -1,10 +1,6 @@
-// Kompres gambar di browser sebelum dikirim ke server (batas server 700 KB, target di sini 500 KB).
-// Hasil selalu JPEG. Latar putih diisi dulu supaya PNG transparan (mis. QRIS) tidak jadi hitam.
-
 const TARGET_BYTE = 500000;
 const MAKS_FILE = 15 * 1024 * 1024;
 
-// bentuk 'fit' = kecilkan, rasio asli tetap. 'persegi' = potong tengah jadi persegi.
 const JENIS = {
   produk: { maks: 1000, bentuk: 'fit', mutu: 0.86 },
   logo: { maks: 512, bentuk: 'persegi', mutu: 0.9 },
@@ -14,7 +10,7 @@ const JENIS = {
 
 async function muat(file) {
   if (window.createImageBitmap) {
-    try { return await createImageBitmap(file, { imageOrientation: 'from-image' }); } catch (e) { /* coba cara lama */ }
+    try { return await createImageBitmap(file, { imageOrientation: 'from-image' }); } catch (e) { }
   }
   const url = URL.createObjectURL(file);
   try {
@@ -55,7 +51,6 @@ export async function kompres(file, jenis) {
   const hgt = src.height;
   if (!w || !hgt) throw new Error('Gambar tidak bisa dibaca.');
 
-  // Area sumber: seluruh gambar, atau persegi di tengah untuk logo.
   let sx = 0, sy = 0, sw = w, sh = hgt;
   if (cfg.bentuk === 'persegi') {
     const side = Math.min(w, hgt);
@@ -86,7 +81,7 @@ export async function kompres(file, jenis) {
       blob = await toBlob(canvas, mutu);
     }
     if (blob.size <= TARGET_BYTE) break;
-    skala *= 0.8; // masih besar: perkecil ukuran lalu ulangi
+    skala *= 0.8;
   }
   if (src.close) src.close();
   if (!blob || blob.size > 650000) throw new Error('Gambar terlalu besar setelah dikompres. Pilih gambar lain.');

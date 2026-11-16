@@ -16,7 +16,7 @@ const DEMO = {
     alamat: '',
     wa_admin: '08532459400',
     logo_url: '', banner_url: '', qris_url: '',
-    rekening: 'BCA|1234567890|DL BEAUTY\nBRI|0987654321|DL BEAUTY' // contoh untuk mode demo
+    rekening: 'BCA|1234567890|DL BEAUTY\nBRI|0987654321|DL BEAUTY'
   },
   kategori: ['body booster', 'paket hemat'],
   cara_terima: CARA_DEFAULT,
@@ -39,7 +39,7 @@ export function readCache() {
 }
 
 function writeCache(data) {
-  try { localStorage.setItem(KEY, JSON.stringify(data)); } catch (e) { /* abaikan */ }
+  try { localStorage.setItem(KEY, JSON.stringify(data)); } catch (e) { }
 }
 
 export async function fetchBootstrap() {
@@ -54,7 +54,6 @@ export async function fetchBootstrap() {
   return json.data;
 }
 
-// text/plain menghindari preflight CORS yang tidak didukung Apps Script.
 async function post(action, payload, fallbackError) {
   let res;
   try {
@@ -72,7 +71,6 @@ async function post(action, payload, fallbackError) {
   return json.data;
 }
 
-/* ---------- Mode demo: pesanan disimpan di localStorage ---------- */
 const DEMO_ORDERS_KEY = 'dlbeauty_demo_orders_v1';
 const DEMO_BAYAR = { antar: 'QRIS', ambil: 'Bayar di tempat', cod: 'Tunai (COD)' };
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -81,7 +79,7 @@ function demoLoad() {
   try { return JSON.parse(localStorage.getItem(DEMO_ORDERS_KEY)) || []; } catch (e) { return []; }
 }
 function demoSave(list) {
-  try { localStorage.setItem(DEMO_ORDERS_KEY, JSON.stringify(list)); } catch (e) { /* abaikan */ }
+  try { localStorage.setItem(DEMO_ORDERS_KEY, JSON.stringify(list)); } catch (e) { }
 }
 function demoFind(list, b) {
   const o = list.find((x) => x.id === Number(b.id) && x.token === String(b.token || ''));
@@ -89,7 +87,6 @@ function demoFind(list, b) {
   return o;
 }
 
-// Hanya untuk uji manual di mode demo: window.__demo.setStatus(id, 'DIKEMAS')
 if (!CONFIG.API_URL) {
   window.__demo = {
     setStatus(id, status) {
@@ -122,13 +119,11 @@ async function createOrderImpl(payload) {
   return post('createOrder', payload, 'Gagal membuat pesanan.');
 }
 
-// Data satu pesanan. id + token wajib cocok; server tidak mengirim pesanan lain.
 export async function getOrder(id, token) {
   if (!CONFIG.API_URL) { await wait(150); return demoFind(demoLoad(), { id, token }); }
   return post('getOrder', { id, token }, 'Gagal memuat pesanan.');
 }
 
-// Pelanggan memilih cara bayar: 'QRIS' atau nama bank (DIPESAN -> PEMBAYARAN).
 async function choosePaymentImpl(id, token, metode) {
   if (!CONFIG.API_URL) {
     await wait(250);
@@ -139,7 +134,6 @@ async function choosePaymentImpl(id, token, metode) {
     const o = demoFind(list, { id, token });
     if (o.cara_terima !== 'antar') throw new Error('Pesanan ini dibayar langsung, tidak lewat QRIS.');
     if (o.status !== 'DIPESAN' && o.status !== 'PEMBAYARAN') throw new Error('Status pesanan sudah ' + o.status + '. Pilihan bayar tidak bisa diubah.');
-    // PEMBAYARAN -> PEMBAYARAN dengan metode lain = pelanggan mengganti metode (selama admin belum menerima).
     o.status = 'PEMBAYARAN';
     o.cara_bayar = metode;
     demoSave(list);
@@ -162,7 +156,6 @@ async function submitReviewImpl(id, token, bintang, komentar) {
   return post('submitReview', { id, token, bintang, komentar }, 'Gagal mengirim ulasan.');
 }
 
-// Progress bar sekarang dipasang di tombol pemanggil (lihat setBar/barFull di ui.js), bukan di sini.
 export const createOrder = createOrderImpl;
 export const choosePayment = choosePaymentImpl;
 export const submitReview = submitReviewImpl;

@@ -22,8 +22,6 @@ export function waLink(number, text) {
   return 'https://wa.me/' + d + (text ? '?text=' + encodeURIComponent(text) : '');
 }
 
-// Teks rekening (satu baris per bank: BANK|NOMOR|ATAS NAMA) -> [{bank, nomor, atas_nama}].
-// Sama dengan parseRekening_ di server; baris yang formatnya rusak dilewati.
 export function parseRekening(teks) {
   return String(teks || '').split(/\r?\n/)
     .map((baris) => baris.split('|').map((s) => s.trim()))
@@ -45,8 +43,6 @@ export function tanggal(iso) {
   return isNaN(d) ? '' : d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
-// Terima link Drive (file/d/ID atau uc?id=ID) dan ubah ke URL gambar langsung.
-// Lebar opsional (default 600); QRIS memakai lebih besar agar tetap tajam saat dipindai.
 export function fotoUrl(url, lebar) {
   const s = String(url || '').trim();
   if (!s) return '';
@@ -54,7 +50,6 @@ export function fotoUrl(url, lebar) {
   return m ? 'https://lh3.googleusercontent.com/d/' + m[1] + '=w' + (lebar || 600) : s;
 }
 
-// Shimmer di kotak gambar sampai gambarnya selesai dimuat (atau gagal).
 export function shimmerOnLoad(box, img) {
   box.classList.add('is-loading');
   const done = () => box.classList.remove('is-loading');
@@ -62,13 +57,11 @@ export function shimmerOnLoad(box, img) {
   img.addEventListener('error', done, { once: true });
   if (img.complete && img.naturalWidth) done();
 }
-// Gambar bawaan dan pemasangan src tanpa memuat ulang bila URL sama.
 export const LOGO_DEFAULT = 'assets/logo.jpeg';
 export const BANNER_DEFAULT = 'assets/banner.jpeg';
 export function setImg(img, src) {
   if (!img || !src) return;
   if (img.getAttribute('src') === src) return;
-  // Shimmer (skeleton) sampai gambar selesai dimuat atau gagal.
   img.classList.add('is-loading');
   const done = () => img.classList.remove('is-loading');
   img.addEventListener('load', done, { once: true });

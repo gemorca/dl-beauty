@@ -1,6 +1,4 @@
-// Isi dengan URL Web App Apps Script (berakhiran /exec).
-// Kosong = mode demo (data contoh, tanpa backend).
 export const CONFIG = {
-  API_URL: 'https://script.google.com/macros/s/AKfycbx7PLlwDt2jcxfUCwJTU8bopIAJlCSU_qnlDGZ-xlD80hv2ofPutIF5Ld_gXqTLLGyRAQ/exec',
+  API_URL: 'https://script.google.com/macros/s/AKfycbx0nCyLT5KL4TBm53n2D_hLTUnOkuNuxmyjybS8143ZQJwEYNbDKb_8jBlvSDp4EnR8rQ/exec',
   MUSIK_URL: 'assets/backsound.mp3?v=2',
 };

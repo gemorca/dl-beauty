@@ -1,5 +1,3 @@
-// Dialog riwayat pesanan di perangkat ini. Data dari localStorage (dlbeauty_orders_v1),
-// ditulis oleh checkout.js. Data lama boleh tidak punya items/cara_terima.
 import { h, rupiah, tanggal } from './util.js';
 import { bindDialog, closeDialog } from './ui.js';
 
@@ -34,7 +32,6 @@ export function openRiwayat() {
     bindDialog(dlg);
     dlg.addEventListener('click', (ev) => { if (ev.target === dlg) closeDialog(dlg); });
   }
-  // Dibaca ulang tiap dibuka, jadi pesanan baru langsung tampil. Urutan simpan = terbaru di atas.
   const rows = loadOrders().map(row).filter(Boolean);
   dlg.replaceChildren(h('div', { class: 'sheet-inner' },
     h('div', { class: 'sheet-head' },

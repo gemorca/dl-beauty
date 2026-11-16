@@ -23,15 +23,12 @@ const revealObs = new IntersectionObserver((list) => {
 let tabEntries = [];
 let searchUi = null;
 
-/* ---------- Toast ---------- */
 const toast = (msg, action) => showToast(msg, action ? 3500 : 2200, action);
 
-/* ---------- Header, banner, footer ---------- */
 function applySettings(p) {
   const nama = p.nama_toko || 'DL BEAUTY';
   document.title = nama;
   $('brandName').textContent = nama;
-  // Bawaan hanya dipakai bila pengaturan memang kosong; src tidak pernah diisi lebih dulu di HTML.
   setImg($('brandLogo'), p.logo_url ? fotoUrl(p.logo_url) : LOGO_DEFAULT);
   setImg($('banner'), p.banner_url ? fotoUrl(p.banner_url, 2400) : BANNER_DEFAULT);
   $('banner').alt = 'Banner ' + nama;
@@ -48,7 +45,6 @@ function applySettings(p) {
   $('footerText').textContent = [p.tagline, p.alamat].filter(Boolean).join(' \u00b7 ');
 }
 
-/* ---------- Produk ---------- */
 function productCard(p, step) {
   const src = fotoUrl(p.foto);
   const img = src ? h('img', { src, alt: '', loading: 'lazy', decoding: 'async' }) : null;
@@ -60,7 +56,6 @@ function productCard(p, step) {
     p.habis ? h('span', { class: 'badge-sold' }, 'HABIS') : null
   );
   if (img) shimmerOnLoad(media, img);
-  // Foto dan nama membuka detail. Tombol kecil menambah 1 item langsung; Beli sekarang tetap di dialog detail.
   const btn = h('button', {
     class: 'btn btn-add', type: 'button', disabled: p.habis,
     'aria-label': (p.habis ? 'Habis: ' : 'Tambah ke keranjang: ') + p.nama,
@@ -80,7 +75,6 @@ function productCard(p, step) {
   return card;
 }
 
-/* ---------- Detail produk ---------- */
 let detailDlg = null;
 
 function openDetail(p) {
@@ -95,8 +89,6 @@ function openDetail(p) {
     class: 'btn btn-block', type: 'button', disabled: p.habis,
     onclick: (ev) => { closeDialog(detailDlg); addToCart(p, ev.currentTarget); }
   }, p.habis ? 'Habis' : 'Tambah keranjang');
-  // Beli sekarang: masukkan 1 item lalu langsung buka checkout. Bila sudah mentok
-  // MAX_QTY, item tetap ada di keranjang, jadi checkout tetap dibuka.
   const buy = h('button', {
     class: 'btn btn-solid btn-block', type: 'button', disabled: p.habis,
     onclick: () => {
@@ -118,7 +110,6 @@ function openDetail(p) {
     h('div', { class: 'ocard-tags' },
       p.kategori ? h('span', { class: 'tag' }, p.kategori) : null,
       p.habis ? h('span', { class: 'tag tag-dibatalkan' }, 'Habis') : null),
-    // textContent lewat h(): deskripsi tidak pernah dibaca sebagai HTML; baris baru lewat CSS pre-line.
     desc ? h('p', { class: 'detail-desc' }, desc) : null,
     h('div', { class: 'detail-bar' }, add, buy)
   ));
@@ -126,14 +117,13 @@ function openDetail(p) {
 }
 
 function productSection(id, title, items) {
-  let k = 0; // urutan stagger hanya untuk kartu yang baru
+  let k = 0;
   return h('section', { class: 'section', id, 'data-kat': '1' },
     h('h2', { class: 'section-title' }, title),
     h('div', { class: 'grid' }, items.map((p) => productCard(p, enter.has(String(p.id)) ? Math.min(k++, 7) : -1)))
   );
 }
 
-/* ---------- Ulasan ---------- */
 function reviewSection(u) {
   const wrap = h('section', { class: 'section', id: 'ulasan' }, h('h2', { class: 'section-title' }, 'Ulasan pelanggan'));
   if (!u || !u.jumlah) {
@@ -162,10 +152,9 @@ function reviewSection(u) {
   return wrap;
 }
 
-/* ---------- Tab ---------- */
 let activeId = '';
-let navAnim = 0;   // id requestAnimationFrame animasi scroll vertikal; 0 = tidak jalan
-let navLock = false; // true selama animasi: observer tidak boleh mengganti tab aktif
+let navAnim = 0;
+let navLock = false;
 
 function setActive(id) {
   if (id === activeId && document.querySelector('.tab.is-active')) return;
@@ -177,8 +166,6 @@ function setActive(id) {
     if (on) { t.setAttribute('aria-current', 'true'); active = t; } else t.removeAttribute('aria-current');
   });
   if (!active) return;
-  // Geser strip tab secara horizontal saja. scrollIntoView ikut menggeser halaman secara vertikal
-  // dan membatalkan animasi scroll yang sedang jalan; itu penyebab pindah kategori terasa kasar.
   const box = $('tabs');
   const r = active.getBoundingClientRect();
   const b = box.getBoundingClientRect();
@@ -194,7 +181,6 @@ function stopNav() {
   navLock = false;
 }
 
-// Scroll vertikal dengan easing sendiri: sama di semua browser mobile, satu animasi, tanpa saling tabrak.
 function scrollToSection(el, onDone) {
   stopNav();
   const margin = parseFloat(getComputedStyle(el).scrollMarginTop) || 0;
@@ -218,7 +204,6 @@ function scrollToSection(el, onDone) {
   navAnim = requestAnimationFrame(step);
 }
 
-// Sentuhan atau roda dari pengguna langsung menghentikan animasi.
 ['touchstart', 'wheel', 'keydown'].forEach((ev) => addEventListener(ev, stopNav, { passive: true }));
 
 function buildTabs(entries) {
@@ -230,14 +215,13 @@ function buildTabs(entries) {
         ev.preventDefault();
         const el = $(e.id);
         if (!el) return;
-        setActive(e.id); // tab langsung berpindah; observer dikunci sampai animasi selesai
+        setActive(e.id);
         scrollToSection(el, () => history.replaceState(null, '', '#' + e.id));
       }
     }, e.label)
   ));
 }
 
-// Observer hanya untuk section yang tampil; dibangun ulang tiap filter berubah.
 function observeVisible() {
   if (observer) observer.disconnect();
   observer = new IntersectionObserver((list) => {
@@ -250,7 +234,6 @@ function observeVisible() {
   if (visible.length && (!cur || cur.hidden)) setActive(visible[0].id);
 }
 
-/* ---------- Pencarian ---------- */
 const normQ = (s) => String(s || '').toLowerCase().replace(/\s+/g, ' ').trim();
 
 function applyFilter() {
@@ -260,7 +243,7 @@ function applyFilter() {
     let n = 0;
     sec.querySelectorAll('.card').forEach((c) => {
       const ok = !q || c.dataset.q.includes(q);
-      c.hidden = !ok; // hidden, bukan dibangun ulang: animasi tidak berulang
+      c.hidden = !ok;
       if (ok) n += 1;
     });
     sec.hidden = n === 0;
@@ -306,7 +289,6 @@ function initSearch() {
   document.querySelector('nav.tabs').before(h('div', { class: 'container search' }, info));
 }
 
-/* ---------- Render ---------- */
 function render(data) {
   const key = JSON.stringify(data);
   if (key === lastRendered) return;
@@ -345,7 +327,6 @@ function render(data) {
   }
 }
 
-// Section yang baru dan masih di bawah layar muncul saat di-scroll; yang sudah terlihat langsung jalan.
 function armReveal() {
   const below = (el) => el.getBoundingClientRect().top > innerHeight * 0.9;
   document.querySelectorAll('#content [data-kat]').forEach((sec) => {
@@ -363,8 +344,8 @@ function armReveal() {
 
 function renderError(err, hasData) {
   if (hasData) { toast('Gagal memperbarui data'); return; }
-  $('tabs').replaceChildren(); // buang pill skeleton
-  applySettings({}); // tanpa cache dan tanpa jaringan: baru pakai logo dan banner bawaan
+  $('tabs').replaceChildren();
+  applySettings({});
   $('content').replaceChildren(
     h('div', { class: 'state' },
       h('p', null, 'Data toko belum bisa dimuat.'),
@@ -374,12 +355,10 @@ function renderError(err, hasData) {
   );
 }
 
-/* ---------- Mulai ---------- */
-// Tombol "Tambah" memberi umpan balik sendiri; keranjang tidak lagi terbuka otomatis.
 const addTimers = new WeakMap();
 
 function flashAdded(btn) {
-  if (!btn.dataset.label) btn.dataset.label = btn.textContent; // label asli, dipulihkan setelah 1 detik
+  if (!btn.dataset.label) btn.dataset.label = btn.textContent;
   clearTimeout(addTimers.get(btn));
   btn.classList.add('is-added');
   btn.textContent = '\u2713 Ditambahkan';
@@ -405,7 +384,7 @@ function updateBadge() {
   badge.hidden = n === 0;
   if (n > prevCount) {
     badge.classList.remove('is-bump');
-    void badge.offsetWidth; // ulang animasi bila ditambah beruntun
+    void badge.offsetWidth;
     badge.classList.add('is-bump');
   }
   prevCount = n;

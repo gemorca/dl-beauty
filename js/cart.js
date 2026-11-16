@@ -19,7 +19,7 @@ function load() {
 }
 
 function save() {
-  try { localStorage.setItem(KEY, JSON.stringify(items)); } catch (e) { /* abaikan */ }
+  try { localStorage.setItem(KEY, JSON.stringify(items)); } catch (e) { }
   listeners.forEach((fn) => fn(items));
 }
 
@@ -28,7 +28,6 @@ export const cart = {
   count() { return items.reduce((s, it) => s + it.jumlah, 0); },
   total() { return items.reduce((s, it) => s + it.harga * it.jumlah, 0); },
 
-  // Mengembalikan false bila jumlah sudah mencapai MAX_QTY (tidak ada yang berubah).
   add(p) {
     const found = items.find((it) => it.id === p.id);
     if (found) {
@@ -56,7 +55,6 @@ export const cart = {
     return () => listeners.delete(fn);
   },
 
-  // Samakan keranjang dengan data terbaru. Mengembalikan nama produk yang dibuang.
   sync(produk) {
     const byId = new Map(produk.map((p) => [p.id, p]));
     const removed = [];

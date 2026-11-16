@@ -1,11 +1,8 @@
-// UX-4: skeleton screen. Memakai kelas konten asli (.stat, .pcard, .ocard, dst.) dan tinggi
-// baris yang sama, supaya tidak ada layout shift saat data datang. Semua ukuran lewat kelas CSS.
 import { h } from './util.js';
 
 const bar = (cls) => h('span', { class: 'sk sk-bar ' + cls });
 const rep = (n, fn) => Array.from({ length: n }, fn);
 const hide = (n) => { n.setAttribute('aria-hidden', 'true'); return n; };
-// Teks "Memuat…" hanya untuk pembaca layar; kerangkanya disembunyikan dari mereka.
 const wrap = (...nodes) => [h('span', { class: 'sr' }, 'Memuat\u2026'), ...nodes.map(hide)];
 
 const stat = () => h('div', { class: 'stat' }, bar('sk-statlabel sk-w60'), bar('sk-statval sk-w50'));
@@ -41,7 +38,6 @@ const krow = () => h('li', { class: 'krow' },
   h('div', { class: 'krow-main sk-krow-main' }, bar('sk-line sk-w60'), bar('sk-line sk-sm sk-w40')),
   h('div', { class: 'krow-actions' }, bar('sk-btn sk-sq'), bar('sk-btn sk-sq'), bar('sk-btn sk-btn-s')));
 
-/* ---------- Admin ---------- */
 export function skBoard() {
   const col = (n) => h('section', { class: 'col' },
     h('h2', { class: 'col-head' }, bar('sk-colhead'), bar('sk-count')),
@@ -79,8 +75,6 @@ export function skTampilan() {
     ...field(), ...field(), ...field(), ...field());
 }
 
-/* ---------- Halaman pesanan (publik) ---------- */
-// Harus sama dengan markup statis di pesanan.html, supaya tidak ada lompatan saat JS menggantikannya.
 export function skPesanan() {
   const step = () => h('li', { class: 'step' }, h('span', { class: 'sk sk-dot' }), bar('sk-steplabel'));
   const panel = (n) => h('section', { class: 'panel' }, bar('sk-ptitle'), rep(n, (_, i) => bar('sk-line sk-w' + (i % 2 ? '60' : '100'))));

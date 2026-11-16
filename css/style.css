@@ -20,7 +20,7 @@
 }
 
 *, *::before, *::after { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; } /* scroll halus dikerjakan JS (app.js); CSS smooth bentrok */
+html { -webkit-text-size-adjust: 100%; }
 body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 15px; line-height: 1.5; }
 img { display: block; max-width: 100%; }
 a { color: inherit; }
@@ -29,7 +29,6 @@ a { color: inherit; }
 
 .container { width: 100%; max-width: 1120px; margin: 0 auto; padding: 0 20px; }
 
-/* Header */
 .topbar {
   position: sticky; top: 0; z-index: 30; height: var(--header-h);
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
@@ -50,13 +49,11 @@ a { color: inherit; }
 .btn-solid:hover { background: var(--brown-deep); }
 .btn[disabled] { opacity: .55; cursor: not-allowed; }
 
-/* Banner */
 .hero { padding-top: 20px; padding-bottom: 8px; }
 .hero-img { width: 100%; max-width: 1000px; margin: 0 auto; border-radius: 22px; }
-/* Belum ada src: sembunyikan, jangan tampilkan gambar bawaan dulu. */
+
 .hero-img:not([src]), .hero-img.is-loading { aspect-ratio: auto 3 / 1; }
 
-/* Tabs */
 .tabs { position: sticky; top: var(--header-h); z-index: 20; background: var(--bg); border-bottom: 1px solid var(--line); }
 .tabs-inner { overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; display: flex; align-items: center; gap: 8px; height: var(--tabs-h); overflow-x: auto; scrollbar-width: none; }
 .tabs-inner::-webkit-scrollbar { display: none; }
@@ -68,11 +65,9 @@ a { color: inherit; }
 .tab:hover { color: var(--brown); border-color: var(--gold); }
 .tab.is-active { background: var(--brown); border-color: var(--brown); color: #fff; }
 
-/* Section */
 .section { padding-top: 28px; scroll-margin-top: calc(var(--header-h) + var(--tabs-h)); }
 .section-title { margin: 0 0 12px; font-family: var(--sans); font-weight: 700; font-size: 18px; line-height: 1.3; color: var(--brown-deep); }
 
-/* Grid + card */
 .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
 @media (min-width: 720px) { .grid { grid-template-columns: repeat(3, 1fr); gap: 12px; } }
 @media (min-width: 1000px) { .grid { grid-template-columns: repeat(5, 1fr); } }
@@ -96,7 +91,6 @@ a { color: inherit; }
 
 @keyframes shimmer { to { background-position: -200% 0; } }
 
-/* Ulasan */
 .rating { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
 .rating-score { font-family: var(--serif); font-size: 44px; line-height: 1; color: var(--brown); }
 .stars { color: var(--brown); letter-spacing: 2px; }
@@ -108,15 +102,12 @@ a { color: inherit; }
 .review-text { margin: 8px 0 0; overflow-wrap: anywhere; }
 .empty { color: var(--muted); }
 
-/* Error */
 .state { padding: 48px 0; text-align: center; color: var(--muted); }
 .state .btn { margin-top: 12px; }
 
-/* Footer */
 .footer { margin-top: 48px; padding-top: 20px; padding-bottom: 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
 .footer p { margin: 0; }
 
-/* Toast */
 .toast {
   position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 50; max-width: calc(100% - 40px);
   padding: 12px 20px; border-radius: 999px; background: var(--brown-deep); color: #fff; font-size: 14px;
@@ -130,7 +121,6 @@ a { color: inherit; }
   .btn { padding: 0 14px; }
 }
 
-/* Keranjang */
 .topbar-actions { display: flex; align-items: center; gap: 8px; }
 .badge { display: inline-grid; place-items: center; min-width: 20px; height: 20px; margin-left: 8px; padding: 0 6px; border-radius: 999px; background: var(--brown); color: #fff; font-size: 12px; font-weight: 600; }
 .btn-block { width: 100%; margin-top: 10px; min-height: 46px; }
@@ -196,7 +186,6 @@ textarea.input { resize: vertical; min-height: 84px; }
   .topbar .btn { padding: 0 10px; min-height: 38px; }
 }
 
-/* Halaman status pesanan */
 .page-narrow { max-width: 600px; padding-bottom: 40px; }
 .page-title { margin: 24px 0 4px; font-family: var(--serif); font-weight: 600; font-size: 28px; color: var(--brown-deep); }
 .page-narrow .success-id { margin: 0 0 18px; }
@@ -247,7 +236,6 @@ textarea.input { resize: vertical; min-height: 84px; }
   .page-title { font-size: 25px; }
 }
 
-/* Tombol WhatsApp melayang (halaman publik) */
 .wa-float {
   position: fixed; z-index: 25; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom, 0px));
   display: inline-flex; align-items: center; justify-content: center; gap: 10px;
@@ -264,7 +252,6 @@ textarea.input { resize: vertical; min-height: 84px; }
 body:has(.wa-float:not([hidden])) .footer { padding-bottom: 96px; }
 @media (prefers-reduced-motion: reduce) { .wa-float { transition: none; } .wa-float:hover { transform: none; } }
 
-/* Tombol Suara dan Musik (header publik) */
 .btn-icon { gap: 8px; padding: 0 14px; }
 .btn-icon svg { flex: none; width: 18px; height: 18px; }
 .btn-icon .ic-on { display: none; }
@@ -274,11 +261,10 @@ body:has(.wa-float:not([hidden])) .footer { padding-bottom: 96px; }
 .btn-icon[aria-pressed="true"]:hover { background: var(--brown-deep); }
 @media (max-width: 560px) {
   .topbar .btn-icon { width: 38px; min-height: 38px; padding: 0; }
-  /* Tombol WhatsApp melayang sudah ada di pojok, jadi "Chat" di header dilepas di layar sempit. */
+
   .topbar #chatAdmin { display: none; }
 }
 
-/* UX-2: tombol dan respons sentuh */
 .btn { transition: background-color var(--dur-1) var(--ease), border-color var(--dur-1) var(--ease), color var(--dur-1) var(--ease), box-shadow var(--dur-2) var(--ease), transform var(--dur-1) var(--ease); }
 @media (hover: hover) {
   .btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(59, 34, 8, .16); }
@@ -288,7 +274,7 @@ body:has(.wa-float:not([hidden])) .footer { padding-bottom: 96px; }
 .btn.is-loading:disabled { opacity: .85; cursor: progress; }
 .btn.is-loading::before { content: ""; flex: none; width: 14px; height: 14px; margin-right: 8px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: spin .7s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
-/* Spinner penanda proses, bukan hiasan: tetap berputar (lebih pelan) walau reduced motion. */
+
 @media (prefers-reduced-motion: reduce) {
   .btn.is-loading::before { animation-duration: 1.4s !important; animation-iteration-count: infinite !important; }
 }
@@ -313,12 +299,10 @@ body:has(.wa-float:not([hidden])) .footer { padding-bottom: 96px; }
 @keyframes pop { 40% { transform: scale(1.3); } }
 @keyframes bump { 40% { transform: scale(1.35); } }
 
-/* Toast dengan tombol aksi */
 .toast.has-action { display: flex; align-items: center; gap: 12px; padding-right: 10px; }
 .toast.has-action.is-show { pointer-events: auto; }
 .toast-action { flex: none; min-height: 40px; padding: 0 8px; border: 0; background: none; color: #f3d890; font: 600 14px/1 var(--sans); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 
-/* UX-3: progress bar di bawah tombol (create/update). Nilai --p (0..1) diatur setBar() di ui.js. */
 .btn.is-progress { position: relative; }
 .btn.is-progress:disabled { opacity: .85; cursor: progress; }
 .btn.is-progress::before, .btn.is-progress::after {
@@ -328,12 +312,10 @@ body:has(.wa-float:not([hidden])) .footer { padding-bottom: 96px; }
 .btn.is-progress::before { background: var(--line); }
 .btn.is-progress::after { background: linear-gradient(90deg, var(--gold), var(--brown)); transform-origin: 0 50%; transform: scaleX(var(--p, 0)); transition: transform .25s ease-out; }
 
-/* Reduced motion global: semua animasi dan transisi diperpendek untuk pengguna yang memintanya. */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
 }
 
-/* UX-4: skeleton screen. Ukuran mengikuti konten asli supaya tidak ada layout shift. */
 .sk, .card-media.is-loading, .pthumb.is-loading,
 .brand-logo:not([src]), .brand-logo.is-loading, .hero-img:not([src]), .hero-img.is-loading {
   background: linear-gradient(100deg, #f7ecd0 30%, #fff6de 50%, #f7ecd0 70%);
@@ -343,12 +325,12 @@ body:has(.wa-float:not([hidden])) .footer { padding-bottom: 96px; }
 @media (prefers-reduced-motion: reduce) { .sk, .card-media.is-loading, .pthumb.is-loading, .brand-logo:not([src]), .brand-logo.is-loading, .hero-img:not([src]), .hero-img.is-loading { animation: none; } }
 
 .sk-bar { display: block; max-width: 100%; border-radius: 8px; }
-.sk-line { height: 14px; margin: 4px 0; }                      /* baris teks 15px, tinggi ~22px */
+.sk-line { height: 14px; margin: 4px 0; }
 .sk-sm { height: 12px; margin: 3px 0; }
-.sk-title { width: 160px; height: 22px; margin: 7px 0 21px; }  /* h2 .section-title: 36px + 14px */
-.admin .sk-title { margin-bottom: 17px; }                      /* admin: 36px + 10px */
+.sk-title { width: 160px; height: 22px; margin: 7px 0 21px; }
+.admin .sk-title { margin-bottom: 17px; }
 .sk-subtitle { width: 40%; height: 18px; margin: 30px 0 6px; }
-.sk-label { width: 90px; height: 12px; margin: 17px 0 9px; }   /* .label: 18px + 14px + 6px */
+.sk-label { width: 90px; height: 12px; margin: 17px 0 9px; }
 .sk-input { height: 49px; border-radius: 14px; }
 .sk-pill { height: 24px; border-radius: 999px; }
 .sk-btn { width: 132px; height: 40px; border-radius: 999px; }
@@ -357,8 +339,8 @@ body:has(.wa-float:not([hidden])) .footer { padding-bottom: 96px; }
 .sk-sq { width: 40px; }
 .sk-tag { width: 64px; }
 .sk-total { width: 80px; }
-.sk-statlabel { height: 12px; margin: 3px 0; }                 /* .stat-label: 18px */
-.sk-statval { height: 22px; margin: 3px 0; }                   /* .stat-val: 27,6px */
+.sk-statlabel { height: 12px; margin: 3px 0; }
+.sk-statval { height: 22px; margin: 3px 0; }
 .sk-stars { height: 16px; margin: 8px 0 6px; }
 .sk-dayhead { width: 45%; height: 18px; margin: 4.5px 0 12.5px; }
 .sk-colhead { width: 50%; height: 18px; }
@@ -370,10 +352,9 @@ body:has(.wa-float:not([hidden])) .footer { padding-bottom: 96px; }
 .updated { min-height: 18px; }
 @media (max-width: 420px) { .sk-statval { height: 17px; } }
 
-/* Publik: kartu, pill tab, ulasan */
 .card .sk-btn { width: 100%; height: 34px; margin-top: auto; }
-.sk-name { height: 14px; margin: 19px 0 15px; }                      /* .card-name: 8 + 36 + 4 = 48 */
-.sk-price { height: 15px; margin: 3.5px 0 11.5px; }                  /* .card-price: 22 + 8 = 30 */
+.sk-name { height: 14px; margin: 19px 0 15px; }
+.sk-price { height: 15px; margin: 3.5px 0 11.5px; }
 .sk-tabpill { flex: none; align-self: center; height: 34px; border-radius: 999px; }
 .sk-tabpill:nth-child(1) { width: 84px; }
 .sk-tabpill:nth-child(2) { width: 72px; }
@@ -382,20 +363,17 @@ body:has(.wa-float:not([hidden])) .footer { padding-bottom: 96px; }
 .sk-score { width: 56px; height: 44px; }
 .sk-rtext { width: 130px; }
 
-/* Halaman pesanan */
-.sk-pagetitle { width: 60%; height: 26px; margin: 32px 0 12px; }  /* h1: 24 + 42 + 4 */
+.sk-pagetitle { width: 60%; height: 26px; margin: 32px 0 12px; }
 .sk-pageid { width: 40%; height: 18px; margin: 6px 0 24px; }
 .sk-dot { position: relative; z-index: 1; width: 32px; height: 32px; border-radius: 50%; }
 .sk-steplabel { width: 60%; height: 11px; margin: 2.75px 0; }
 .sk-ptitle { width: 50%; height: 18px; margin: 5px 0 15px; }
 
-/* Gambar yang belum selesai dimuat */
 .card-media.is-loading img, .pthumb.is-loading img { opacity: 0; }
 
 .sk-w30 { width: 30%; } .sk-w40 { width: 40%; } .sk-w50 { width: 50%; }
 .sk-w60 { width: 60%; } .sk-w80 { width: 80%; } .sk-w100 { width: 100%; }
 
-/* UX-5: detail produk dan pencarian */
 .card-open { display: block; width: 100%; padding: 0; border: 0; font: inherit; cursor: pointer; }
 .card-name-btn { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; width: 100%; padding: 0; border: 0; background: none; font: inherit; color: inherit; text-align: left; overflow-wrap: anywhere; cursor: pointer; }
 @media (hover: hover) { .card-name-btn:hover { text-decoration: underline; text-underline-offset: 3px; } }
@@ -425,7 +403,6 @@ body:has(.wa-float:not([hidden])) .footer { padding-bottom: 96px; }
 .search-info { margin: 8px 0 0; }
 .search-info:empty { margin: 0; }
 
-/* UX-6: animasi halus. Hanya transform + opacity, tiap animasi maksimal 0,5 detik. */
 @keyframes rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
 @keyframes fade-in { from { opacity: 0; } }
 @keyframes fade-out { to { opacity: 0; } }
@@ -437,14 +414,12 @@ body:has(.wa-float:not([hidden])) .footer { padding-bottom: 96px; }
 @keyframes flash { from { opacity: .3; } to { opacity: 0; } }
 @keyframes fill-line { from { transform: scaleX(0); } }
 
-/* Produk: naik dari bawah dengan stagger. Section di bawah layar menunggu .is-in (IntersectionObserver). */
 .card.is-enter { opacity: 0; animation: rise var(--dur-3) var(--ease) forwards; animation-delay: calc(var(--i, 0) * 50ms); }
 .section.reveal .card.is-enter { animation-play-state: paused; }
 .section.reveal.is-in .card.is-enter { animation-play-state: running; }
 .section.reveal-self { opacity: 0; transform: translateY(18px); transition: opacity var(--dur-3) var(--ease), transform var(--dur-3) var(--ease); }
 .section.reveal-self.is-in { opacity: 1; transform: none; }
 
-/* Dialog: scale + fade di desktop, slide-up di HP; juga saat ditutup (kelas .is-closing dari ui.js) */
 .sheet[open] { animation: pop-in var(--dur-2) var(--ease); }
 .sheet.is-closing { animation: pop-out var(--dur-1) ease-in forwards; }
 .sheet[open]::backdrop { animation: fade-in var(--dur-2) var(--ease); }
@@ -455,17 +430,13 @@ body:has(.wa-float:not([hidden])) .footer { padding-bottom: 96px; }
   .sheet.is-closing::backdrop { animation-duration: var(--dur-2); }
 }
 
-/* Toast slide-up */
 .toast { transform: translateX(-50%) translateY(24px); }
 
-/* Panel tab admin */
 [role="tabpanel"]:not([hidden]) { animation: fade-in var(--dur-2) var(--ease); }
 
-/* Kartu pesanan baru di admin: slide-in + highlight memudar */
 .ocard.is-new { position: relative; animation: slide-in var(--dur-3) var(--ease); }
 .ocard.is-new::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background: var(--gold); pointer-events: none; opacity: 0; animation: flash var(--dur-3) ease-out .2s both; }
 
-/* Halaman pesanan: panel berurutan, garis stepper terisi. Hanya saat tampil pertama (#view.is-enter). */
 .is-enter > .panel, .is-enter > .btn-block { opacity: 0; animation: rise var(--dur-3) var(--ease) forwards; }
 .is-enter > .panel:nth-of-type(1) { animation-delay: .1s; }
 .is-enter > .panel:nth-of-type(2) { animation-delay: .18s; }
@@ -486,7 +457,6 @@ body:has(.wa-float:not([hidden])) .footer { padding-bottom: 96px; }
   .ocard.is-new::after { display: none; }
 }
 
-/* Riwayat pesanan (dialog di beranda) */
 .riwayat-list { display: grid; }
 .riwayat-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); text-decoration: none; }
 .riwayat-info { display: grid; min-width: 0; }
@@ -495,7 +465,6 @@ body:has(.wa-float:not([hidden])) .footer { padding-bottom: 96px; }
 .riwayat-total { flex: none; font-weight: 600; color: var(--brown); }
 @media (hover: hover) { .riwayat-row:hover .riwayat-id { text-decoration: underline; text-underline-offset: 3px; } }
 
-/* Cetak invoice (halaman pesanan) */
 .invoice-head { align-items: baseline; justify-content: space-between; gap: 12px; margin: 0 0 14px; padding-bottom: 10px; border-bottom: 2px solid var(--gold); }
 .invoice-shop { font-family: var(--serif); font-size: 22px; color: var(--brown-deep); }
 .print-only { display: none; }
@@ -509,13 +478,11 @@ body:has(.wa-float:not([hidden])) .footer { padding-bottom: 96px; }
   .is-enter > .panel { opacity: 1; animation: none; }
 }
 
-/* Layar bayar transfer bank */
 .kv-big { font-size: 18px; font-weight: 600; letter-spacing: .02em; color: var(--brown); }
 
-/* Ganti metode bayar */
 .ganti { margin-top: 6px; }
 .ganti-list { margin-top: 4px; }
-/* Toko: header dengan pencarian, tombol keranjang ikon */
+
 .shop { --header-h: 64px; }
 .topbar.has-search { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 0 16px; }
 .topbar-search { width: 100%; max-width: 560px; min-width: 0; justify-self: center; }

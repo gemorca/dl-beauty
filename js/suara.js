@@ -1,39 +1,20 @@
-// Suara dan musik latar untuk halaman publik.
-//
-// - "Suara" = efek bunyi pendek (misalnya saat produk masuk keranjang). Pilihan disimpan di
-//   localStorage (dlbeauty_sound_v1). Bawaan: mati.
-// - "Musik" = musik latar. Bawaan: NYALA. Saat halaman dibuka, musik dicoba diputar langsung
-//   BERSUARA (jalan bila browser mengizinkan, mis. pengunjung yang sering datang). Bila diblokir,
-//   musik diputar dalam keadaan senyap (selalu diizinkan browser) lalu dibunyikan pada interaksi
-//   pertama pengunjung (klik, ketuk, atau tombol keyboard). Bila putar senyap pun ditolak, musik
-//   dimulai pada interaksi pertama. Selama masih senyap, tombol Musik tampil mati. Bila pengunjung
-//   mematikannya, pilihan itu disimpan (dlbeauty_music_v1 = 0) dan musik tidak menyala otomatis
-//   lagi di kunjungan berikutnya.
-//
-// Sumber musik:
-//   1. Bila CONFIG.MUSIK_URL berisi alamat file audio (mp3/ogg/m4a, mis. 'assets/musik.mp3'),
-//      file itu diputar berulang. Pastikan kamu punya hak memakai lagunya.
-//   2. Bila kosong, dipakai musik ambien buatan sendiri (disintesis di browser, tanpa file,
-//      tanpa hak cipta pihak lain).
-//
-// Semua suara berhenti saat tab disembunyikan dan lanjut saat tab dibuka lagi.
 import { CONFIG } from './config.js';
 
 const SOUND_KEY = 'dlbeauty_sound_v1';
 const MUSIC_KEY = 'dlbeauty_music_v1';
 const MUSIK_URL = String((CONFIG && CONFIG.MUSIK_URL) || '').trim();
 
-let ac = null;          // AudioContext (dibuat saat klik pertama)
+let ac = null;
 let sfxGain = null;
 let musicGain = null;
 let soundOn = readSound();
 let musicOn = false;
-let silent = false;     // true = musik jalan tapi senyap, menunggu interaksi pertama
+let silent = false;
 let padTimer = 0;
 let bellTimer = 0;
-let playSeq = 0;        // penanda permintaan putar terbaru (abaikan galat dari permintaan lama)
-let fileAudio = null;   // elemen <audio> bila MUSIK_URL dipakai
-let notify = () => {};
+let playSeq = 0;
+let fileAudio = null;
+let notify = () => { };
 let btnSound = null;
 let btnMusic = null;
 
@@ -41,17 +22,15 @@ function readSound() {
   try { return localStorage.getItem(SOUND_KEY) === '1'; } catch (e) { return false; }
 }
 function writeSound(v) {
-  try { localStorage.setItem(SOUND_KEY, v ? '1' : '0'); } catch (e) { /* abaikan */ }
+  try { localStorage.setItem(SOUND_KEY, v ? '1' : '0'); } catch (e) { }
 }
-// Musik nyala kecuali pengunjung pernah mematikannya sendiri.
 function readMusicPref() {
   try { return localStorage.getItem(MUSIC_KEY) !== '0'; } catch (e) { return true; }
 }
 function writeMusicPref(v) {
-  try { localStorage.setItem(MUSIC_KEY, v ? '1' : '0'); } catch (e) { /* abaikan */ }
+  try { localStorage.setItem(MUSIC_KEY, v ? '1' : '0'); } catch (e) { }
 }
 
-// Dipanggil hanya dari dalam penangan klik/sentuh (butuh interaksi pengguna).
 function ensureContext() {
   const AC = window.AudioContext || window.webkitAudioContext;
   if (!AC) return false;
@@ -68,8 +47,6 @@ function ensureContext() {
   return true;
 }
 
-/* ---------- Efek bunyi ---------- */
-
 function tone(freq, start, dur, peak, type) {
   const osc = ac.createOscillator();
   const g = ac.createGain();
@@ -85,9 +62,7 @@ function tone(freq, start, dur, peak, type) {
 }
 
 const SFX = {
-  // Dua nada naik, lembut: produk masuk keranjang.
   tambah(t) { tone(659.25, t, 0.16, 0.22); tone(880, t + 0.09, 0.22, 0.2); },
-  // Satu nada: contoh tombol dinyalakan.
   nyala(t) { tone(783.99, t, 0.2, 0.2); }
 };
 
@@ -98,9 +73,6 @@ export function playSfx(name) {
   SFX[name](ac.currentTime + 0.01);
 }
 
-/* ---------- Musik ambien buatan ---------- */
-
-// Cmaj7 - Am7 - Fmaj7 - G6, oktaf rendah-menengah. Pelan, tanpa ketukan.
 const CHORDS = [
   [130.81, 196.0, 246.94, 329.63],
   [110.0, 164.81, 261.63, 329.63],
@@ -179,8 +151,6 @@ function stopGenerated() {
   }
 }
 
-/* ---------- Musik dari file ---------- */
-
 function giveUp(err) {
   console.warn('Musik gagal diputar:', err && err.name, err);
   musicOn = false;
@@ -196,7 +166,7 @@ function startFile(auto) {
     fileAudio.preload = 'none';
   }
   const seq = ++playSeq;
-  const stale = () => seq !== playSeq; // permintaan lama atau musik sudah dimatikan
+  const stale = () => seq !== playSeq;
   silent = false;
   fileAudio.muted = false;
   const p = fileAudio.play();
@@ -204,7 +174,6 @@ function startFile(auto) {
   p.then(() => { if (!stale()) paint(); }, (err) => {
     if (stale()) return;
     if (!auto) { giveUp(err); notify('Musik tidak bisa diputar'); return; }
-    // Otomatis dengan suara diblokir browser: mulai senyap (selalu diizinkan), bunyikan saat interaksi pertama.
     fileAudio.muted = true;
     fileAudio.play().then(() => {
       if (stale()) return;
@@ -224,8 +193,6 @@ function stopFile() {
   if (fileAudio) fileAudio.pause();
 }
 
-/* ---------- Tombol ---------- */
-
 function paint() {
   if (btnSound) btnSound.setAttribute('aria-pressed', String(soundOn));
   if (btnMusic) btnMusic.setAttribute('aria-pressed', String(musicOn && !silent));
@@ -239,7 +206,6 @@ function toggleSound() {
   if (soundOn) playSfx('nyala');
 }
 
-// Mulai musik. auto=true: dipicu otomatis (bukan klik tombol Musik).
 function startMusic(auto) {
   if (MUSIK_URL) {
     musicOn = true;
@@ -261,11 +227,10 @@ function stopMusic() {
 
 function toggleMusic() {
   disarm();
-  // Musik sudah jalan tapi masih senyap (mulai otomatis): tekan pertama membunyikannya.
   if (musicOn && silent && fileAudio) {
     fileAudio.muted = false;
     silent = false;
-    fileAudio.play().catch(() => {});
+    fileAudio.play().catch(() => { });
     paint();
     notify('Musik nyala');
     return;
@@ -282,14 +247,12 @@ function toggleMusic() {
   paint();
 }
 
-// Menunggu interaksi pertama, lalu memutar musik. Klik pada tombol Musik sendiri diabaikan
-// (tombol itu yang mengatur nyala/mati).
 const GESTURES = ['pointerup', 'click', 'keydown', 'touchend'];
 let armed = false;
 
 function onGesture(ev) {
-  if (ev && ev.target && ev.target.closest && ev.target.closest('#musicBtn')) return; // toggleMusic yang mengurus
-  if (musicOn && silent && fileAudio) { // bunyikan musik senyap; tetap siaga bila browser menolak
+  if (ev && ev.target && ev.target.closest && ev.target.closest('#musicBtn')) return;
+  if (musicOn && silent && fileAudio) {
     fileAudio.muted = false;
     const done = () => { silent = false; paint(); disarm(); };
     const p = fileAudio.play();
@@ -314,21 +277,19 @@ function armGesture() {
   GESTURES.forEach((t) => document.addEventListener(t, onGesture, true));
 }
 
-// Dipanggil sekali saat halaman dibuka.
 function autoStart() {
   if (!readMusicPref()) return;
-  if (MUSIK_URL) startMusic(true);   // coba bersuara; bila ditolak, startFile mulai senyap + armGesture
-  else armGesture();                 // musik buatan butuh interaksi pertama untuk memulai
+  if (MUSIK_URL) startMusic(true);
+  else armGesture();
   paint();
 }
 
-// Hemat baterai dan sopan: berhenti saat tab tidak terlihat.
 function onVisibility() {
   if (document.hidden) {
     if (fileAudio && musicOn) fileAudio.pause();
     if (ac && ac.state === 'running') ac.suspend();
   } else {
-    if (fileAudio && musicOn) fileAudio.play().catch(() => {});
+    if (fileAudio && musicOn) fileAudio.play().catch(() => { });
     if (ac && ac.state === 'suspended' && (musicOn || soundOn)) ac.resume();
   }
 }

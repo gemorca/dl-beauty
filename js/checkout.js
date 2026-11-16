@@ -18,7 +18,6 @@ export function initCheckout() {
   bindDialog(dlg);
   dlg.addEventListener('click', (e) => { if (e.target === dlg) closeDialog(dlg); });
   dlg.addEventListener('close', () => { if (unsub) { unsub(); unsub = null; } });
-  // Kembali lewat tombol Back (bfcache): status kirim dari halaman sebelumnya harus dibuang.
   window.addEventListener('pageshow', (e) => { if (e.persisted) { leaving = false; busy = false; } });
 }
 
@@ -34,15 +33,13 @@ export function openCheckout() {
   if (!dlg.open) dlg.showModal();
 }
 
-/* ---------- Penyimpanan lokal ---------- */
 function loadJSON(key, fallback) {
   try { return JSON.parse(localStorage.getItem(key)) || fallback; } catch (e) { return fallback; }
 }
 function saveJSON(key, val) {
-  try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) { /* abaikan */ }
+  try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) { }
 }
 
-/* ---------- Kerangka sheet ---------- */
 function shell(title, ...body) {
   return [
     h('div', { class: 'sheet-head' },
@@ -57,7 +54,6 @@ function setDialog(nodes) {
   dlg.replaceChildren(h('div', { class: 'sheet-inner' }, nodes));
 }
 
-/* ---------- Form keranjang ---------- */
 function renderForm() {
   if (unsub) { unsub(); unsub = null; }
 
@@ -125,7 +121,7 @@ function renderForm() {
   radios.forEach((r) => r.input.addEventListener('change', syncCara));
   syncCara();
 
-  const prevQty = new Map(); // jumlah terakhir yang digambar, untuk animasi angka berubah
+  const prevQty = new Map();
 
   function row(it) {
     return h('div', { class: 'cart-row' },
@@ -197,7 +193,6 @@ function renderForm() {
       });
       saveJSON(ORDERS_KEY, orders.slice(0, 30));
       cart.clear();
-      // Tombol dibiarkan nonaktif sampai halaman berpindah, supaya tidak terkirim dua kali.
       leaving = true;
       location.assign('pesanan.html?id=' + encodeURIComponent(res.id) + '&t=' + encodeURIComponent(res.token));
     } catch (e) {

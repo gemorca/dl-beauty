@@ -8,7 +8,7 @@ import { skBoard, skTransaksi } from './skeleton.js';
 
 const $ = (id) => document.getElementById(id);
 const POLL_MS = 15000;
-const NEED = ['DIPESAN', 'PEMBAYARAN'];          // kolom "Perlu konfirmasi"
+const NEED = ['DIPESAN', 'PEMBAYARAN'];
 const RUNNING = ['DIPESAN', 'PEMBAYARAN', 'DIKEMAS'];
 const RIWAYAT_AWAL = 20;
 const HARI_TRANSAKSI = 5;
@@ -41,7 +41,6 @@ let katalog = null;
 let keu = null;
 const seenOrders = createSeen();
 
-/* ---------- Util ---------- */
 const toast = (msg) => showToast(msg, 3200);
 
 function addDays(key, n) {
@@ -65,7 +64,6 @@ function waktuText(o, hariIni) {
 
 const sum = (list) => list.reduce((s, o) => s + o.total, 0);
 
-/* ---------- Suara ---------- */
 function ensureAudio() {
   const AC = window.AudioContext || window.webkitAudioContext;
   if (!audio && AC) audio = new AC();
@@ -102,7 +100,6 @@ function toggleSound() {
   paintSound();
 }
 
-/* ---------- Dialog konfirmasi ---------- */
 function confirmDialog(title, text, okLabel) {
   const dlg = $('confirmDialog');
   return new Promise((resolve) => {
@@ -120,8 +117,6 @@ function confirmDialog(title, text, okLabel) {
   });
 }
 
-/* ---------- Invoice (cetak) ---------- */
-// Dialog dibuat sekali, isinya dari data pesanan yang sudah dikirim adminView_ (tanpa panggilan server).
 let invoiceDlg = null;
 
 function openInvoice(o) {
@@ -159,7 +154,6 @@ function openInvoice(o) {
   if (!invoiceDlg.open) invoiceDlg.showModal();
 }
 
-/* ---------- Login ---------- */
 function renderLogin(msg) {
   stopPolling();
   if (katalog) katalog.reset();
@@ -210,7 +204,6 @@ function brandName() {
   return $('brandName').textContent || 'DL BEAUTY';
 }
 
-// Dipanggil setelah Tampilan disimpan: header admin ikut nama dan logo baru.
 function applyBrand(p) {
   if (p.nama_toko) $('brandName').textContent = p.nama_toko;
   setImg($('brandLogo'), p.logo_url ? fotoUrl(p.logo_url, 200) : LOGO_DEFAULT);
@@ -226,7 +219,6 @@ function handleAuth(e) {
   return false;
 }
 
-/* ---------- Kerangka aplikasi ---------- */
 async function showApp() {
   const badge = h('span', { class: 'badge', hidden: true }, '0');
   const tabs = [
@@ -254,7 +246,6 @@ async function showApp() {
   });
   $('tabsHost').replaceChildren(h('nav', { class: 'tabs' }, list));
 
-  // Angka statistik tampil sebagai skeleton sampai data pertama datang (lihat renderPesanan).
   const skStat = () => h('strong', { class: 'stat-val sk sk-bar sk-statval sk-w50' });
   const stats = { hari: skStat(), omzet: skStat(), perlu: skStat(), kemas: skStat() };
   const statCard = (label, el) => h('div', { class: 'stat' }, h('span', { class: 'stat-label' }, label), el);
@@ -281,7 +272,7 @@ async function showApp() {
   paintSound();
   selectTab(tab);
   await refresh(true);
-  if (!ui) return; // sesi ditolak saat memuat: layar login sudah tampil
+  if (!ui) return;
   startPolling();
 }
 
@@ -301,7 +292,6 @@ function selectTab(id) {
   if (keu && (id === 'keuangan' || id === 'ulasan')) keu.show(id);
 }
 
-/* ---------- Kartu pesanan ---------- */
 function actionLabel(o, ke) {
   if (ke === 'DIKEMAS') return o.status === 'PEMBAYARAN' ? 'Terima pembayaran' : 'Konfirmasi pesanan';
   if (ke === 'DIKIRIM') return { antar: 'Tandai dikirim', ambil: 'Tandai diambil', cod: 'Tandai diterima' }[o.cara_terima] || 'Tandai selesai';
@@ -335,7 +325,6 @@ function orderCard(o, hariIni, isNew) {
     ),
     h('div', { class: 'ocard-tags' },
       h('span', { class: 'tag' }, CARA_LABEL[o.cara_terima] || o.cara_terima),
-      // Cara bayar yang dipilih pelanggan (QRIS atau nama bank); sebelum memilih, nilainya belum berarti.
       o.cara_terima === 'antar' && o.cara_bayar && o.status !== 'DIPESAN' ? h('span', { class: 'tag' }, o.cara_bayar) : null,
       tag(o.status)),
     h('ul', { class: 'ocard-items' }, (o.items || []).map((it) => h('li', null, it.jumlah + '× ' + it.nama))),
@@ -364,18 +353,15 @@ async function doAction(o, ke, btn) {
     toast((e && e.message) || 'Gagal mengubah status.');
   } finally {
     busy = false;
-    // Bar berhenti, tapi tombol tetap nonaktif sampai kartu digambar ulang oleh refresh di bawah.
     if (btn) { setBar(btn, false); btn.disabled = true; }
   }
   lastKey = '';
   await refresh(true);
 }
 
-/* ---------- Tab Pesanan ---------- */
 function renderPesanan(d) {
   const orders = d.orders;
   const today = orders.filter((o) => o.hari === d.hari_ini && o.status !== 'DIBATALKAN');
-  // Animasi hanya untuk pesanan yang baru muncul setelah pemuatan pertama.
   const seen = seenOrders.update(orders.map((o) => o.id));
   const fresh = seen.first ? new Set() : seen.added;
   const need = orders.filter((o) => NEED.includes(o.status));
@@ -413,7 +399,6 @@ function renderPesanan(d) {
   );
 }
 
-/* ---------- Tab Transaksi ---------- */
 function table(caption, head, rows) {
   return h('table', { class: 'tbl' },
     h('caption', null, caption),
@@ -438,7 +423,6 @@ function renderTransaksi(d) {
   const days = Array.from({ length: HARI_TRANSAKSI }, (_, i) => addDays(d.hari_ini, -i));
   const inRange = d.orders.filter((o) => days.includes(o.hari));
   const base = inRange.filter(MATCH[filter]);
-  // Pesanan dibatalkan tidak dihitung sebagai transaksi, kecuali filter Dibatalkan.
   const counted = filter === 'batal' ? base : base.filter((o) => o.status !== 'DIBATALKAN');
   const total = sum(counted);
   const batal = inRange.filter((o) => o.status === 'DIBATALKAN').length;
@@ -503,7 +487,6 @@ function renderTransaksi(d) {
   ui.panelT.replaceChildren(...parts);
 }
 
-/* ---------- Render + data ---------- */
 function render() {
   if (!data || !ui) return;
   const key = JSON.stringify([data, filter, riwayatMax]);
@@ -527,7 +510,6 @@ async function refresh(force) {
     data = next;
     detectNew(next.orders);
     render();
-    // Keuangan ikut segar selagi tab-nya terbuka (status pesanan bisa berubah kapan saja).
     if (keu && tab === 'keuangan') keu.show('keuangan');
     if (ui) ui.updated.textContent = 'Diperbarui ' + new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
   } catch (e) {
@@ -556,11 +538,10 @@ document.addEventListener('visibilitychange', () => {
   startPolling();
 });
 
-/* ---------- Mulai ---------- */
 async function logout() {
   const was = session.get();
   stopPolling();
-  try { if (was) await adminLogout(); } catch (e) { /* sesi tetap dihapus di sini */ }
+  try { if (was) await adminLogout(); } catch (e) { }
   session.clear();
   renderLogin('');
 }
@@ -568,13 +549,11 @@ async function logout() {
 async function init() {
   const c = readCache();
   if (c && c.pengaturan) applyBrand(c.pengaturan);
-  // Logo terbaru dari server; logo bawaan hanya bila server juga tidak punya.
   fetchBootstrap().then((d) => applyBrand(d.pengaturan || {})).catch(() => { if (!c) applyBrand({}); });
   bindDialog($('confirmDialog'));
   bindDialog($('formDialog'));
   $('soundBtn').addEventListener('click', toggleSound);
   $('logoutBtn').addEventListener('click', logout);
-  // Browser baru mengizinkan suara setelah ada interaksi pengguna.
   document.addEventListener('pointerdown', () => { if (soundOn) ensureAudio(); });
 
   if (!session.get()) { renderLogin(''); return; }

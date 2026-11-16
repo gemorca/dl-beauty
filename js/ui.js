@@ -1,15 +1,7 @@
-// Pembantu UI bersama untuk halaman publik dan admin.
-// Dipakai oleh: toast (semua halaman). setLoading, closeDialog, bindDialog, createSeen
-// dipakai tahap UX-2 sampai UX-6 (tombol loading, animasi dialog, animasi item baru).
-
 export function reducedMotion() {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
-/* ---------- Toast ---------- */
-// Elemen #toast sudah ada di tiap halaman. Dibuat tampil lewat class .is-show
-// (bukan hanya atribut hidden) supaya bisa dianimasikan.
-// action (opsional): { label, onClick } menambah tombol di dalam toast.
 let toastTimer = 0;
 let toastHide = 0;
 const TOAST_FADE_MS = 220;
@@ -40,14 +32,11 @@ export function toast(msg, ms = 2600, action = null) {
     el.textContent = msg;
   }
   el.hidden = false;
-  void el.offsetWidth; // paksa reflow: transisi mulai dari keadaan tersembunyi
+  void el.offsetWidth;
   el.classList.add('is-show');
   toastTimer = setTimeout(hideToast, ms);
 }
 
-/* ---------- Tombol loading (spinner) ---------- */
-// Dipakai untuk HAPUS dan aksi sekilas: tombol nonaktif + spinner + teks (mis. "Memproses…").
-// Teks asli disimpan, lalu dipulihkan saat on=false (kecuali label diberikan).
 export function setLoading(btn, on, label) {
   if (!btn) return;
   if (on && btn.dataset.orig === undefined) btn.dataset.orig = btn.textContent;
@@ -60,12 +49,6 @@ export function setLoading(btn, on, label) {
   if (!on) delete btn.dataset.orig;
 }
 
-/* ---------- Progress bar di bawah tombol ---------- */
-// Dipakai untuk TAMBAH / UBAH (create/update). Alur:
-//   setBar(btn, true, 'Menyimpan…')  -> tombol nonaktif, bar muncul di bawahnya dan naik pelan sampai ±90%
-//   await barFull(btn)               -> setelah server membalas: bar penuh 100% sebentar
-//   setBar(btn, false)               -> bar hilang, tombol aktif lagi, teks asli dipulihkan (taruh di finally)
-// barFloor(btn, 0..1) menaikkan batas bawah untuk proses bertahap (mis. unggah gambar lalu simpan).
 const bars = new WeakMap();
 const BAR_CAP = 0.9;
 
@@ -113,12 +96,9 @@ export async function barFull(btn) {
   if (!st) return;
   clearInterval(st.timer);
   btn.style.setProperty('--p', '1');
-  await new Promise((r) => setTimeout(r, 300)); // beri waktu bar terlihat penuh
+  await new Promise((r) => setTimeout(r, 300));
 }
 
-/* ---------- Dialog ---------- */
-// Tutup <dialog> setelah animasi keluar selesai. Bila CSS belum mendefinisikan animasi
-// untuk .is-closing, atau pengguna memilih reduced motion, dialog langsung ditutup.
 export function closeDialog(dlg) {
   if (!dlg || !dlg.open || dlg.classList.contains('is-closing')) return;
   dlg.classList.add('is-closing');
@@ -138,17 +118,13 @@ export function closeDialog(dlg) {
   const name = getComputedStyle(dlg).animationName;
   if (reducedMotion() || !name || name === 'none') { finish(); return; }
   dlg.addEventListener('animationend', onEnd);
-  fallback = setTimeout(finish, 500); // jaga-jaga bila animationend tidak datang
+  fallback = setTimeout(finish, 500);
 }
 
-// Tombol Esc memanggil closeDialog supaya animasi keluar tetap jalan.
 export function bindDialog(dlg) {
   dlg.addEventListener('cancel', (ev) => { ev.preventDefault(); closeDialog(dlg); });
 }
 
-/* ---------- Deteksi item baru ---------- */
-// Untuk animasi "hanya yang baru": update(keys) mengembalikan { first, added }.
-// first = panggilan pertama sejak dibuat/reset. added = kunci yang belum pernah terlihat.
 export function createSeen() {
   const seen = new Set();
   let first = true;

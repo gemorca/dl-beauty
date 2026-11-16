@@ -1,6 +1,3 @@
-// Panel admin Tahap 6: Produk, Kategori, Tampilan.
-// Dimuat oleh admin.js. Data katalog dimuat sekali saat salah satu tab ini dibuka;
-// setiap perubahan ke server membalas katalog terbaru, jadi layar selalu sama dengan sheet.
 import { h, rupiah, fotoUrl, shimmerOnLoad } from './util.js';
 import {
   adminCatalog, adminSaveProduct, adminSetSold, adminDeleteProduct,
@@ -10,7 +7,6 @@ import { kompres, keBase64 } from './admin-gambar.js';
 import { setLoading, setBar, barFloor, barFull, closeDialog } from './ui.js';
 import { skProduk, skKategori, skTampilan } from './skeleton.js';
 
-// ctx: { panels:{produk,kategori,tampilan}, formDialog, toast, confirmDialog, handleAuth, onSettings }
 export function mountKatalog(ctx) {
   const { panels, formDialog, toast, confirmDialog, handleAuth, onSettings } = ctx;
   let cat = null;
@@ -18,7 +14,6 @@ export function mountKatalog(ctx) {
   let alive = true;
   let busy = false;
 
-  /* ---------- Muat data ---------- */
   function setAll(...nodes) {
     Object.values(panels).forEach((p) => p.replaceChildren(...nodes.map((n) => (typeof n === 'function' ? n() : n))));
   }
@@ -49,7 +44,6 @@ export function mountKatalog(ctx) {
     if (!cat && !loading) load();
   }
 
-  // Galat dari server di dalam dialog/formulir: sesi habis menutup dialog dan membuka login.
   function fail(e, errEl) {
     if (e && e.code === 'AUTH') {
       if (formDialog.open) formDialog.close();
@@ -59,8 +53,6 @@ export function mountKatalog(ctx) {
     errEl.textContent = (e && e.message) || 'Gagal menyimpan.';
   }
 
-  // Aksi cepat dari daftar (tanpa formulir): hasilnya toast.
-  // hapus=true: spinner + "Memproses…". Selain itu (tambah/ubah): progress bar di bawah tombol.
   async function aksi(fn, pesan, btn, hapus = false) {
     if (busy) return false;
     busy = true;
@@ -86,7 +78,6 @@ export function mountKatalog(ctx) {
 
   const jumlahProduk = (nama) => cat.produk.filter((p) => p.kategori === nama).length;
 
-  /* ---------- Produk ---------- */
   function produkCard(p) {
     const src = fotoUrl(p.foto, 300);
     const terdaftar = cat.kategori.includes(p.kategori);
@@ -132,8 +123,6 @@ export function mountKatalog(ctx) {
     await aksi(() => adminDeleteProduct(p.id), 'Produk dihapus', btn, true);
   }
 
-  // Satu gambar yang menunggu diunggah. url diisi setelah berhasil, supaya percobaan ulang
-  // (mis. simpan gagal setelah unggah berhasil) tidak mengunggah file yang sama dua kali.
   async function pastikanUnggah(jenis, s) {
     if (!s.pending) return s.url;
     if (!s.pending.url) {
@@ -171,7 +160,6 @@ export function mountKatalog(ctx) {
     const desc = h('textarea', { id: 'pf-desc', class: 'input', maxlength: '500', rows: '4' }, p ? p.deskripsi : '');
     const habis = h('input', { id: 'pf-habis', type: 'checkbox', checked: Boolean(p && p.habis) });
 
-    // Foto
     const prev = h('div', { class: 'pthumb pthumb-lg' });
     const info = h('p', { class: 'muted field-hint', 'aria-live': 'polite' });
     const file = h('input', { type: 'file', accept: 'image/*', hidden: true, 'aria-label': 'Pilih foto produk' });
@@ -269,7 +257,6 @@ export function mountKatalog(ctx) {
     nama.focus();
   }
 
-  /* ---------- Kategori ---------- */
   function renderKategori() {
     const list = cat.kategori;
     const err = h('p', { class: 'form-error', role: 'alert' });
@@ -326,7 +313,6 @@ export function mountKatalog(ctx) {
     );
   }
 
-  /* ---------- Tampilan ---------- */
   function renderTampilan() {
     const p = cat.pengaturan;
     const st = {

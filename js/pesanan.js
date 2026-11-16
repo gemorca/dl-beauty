@@ -12,7 +12,7 @@ const CARA_LABEL = { antar: 'Antar ke rumah', ambil: 'Ambil di tempat', cod: 'CO
 const ALAMAT_LABEL = { antar: 'Alamat pengiriman', cod: 'Titik pertemuan' };
 const STEP_INDEX = { DIPESAN: 0, PEMBAYARAN: 1, DIKEMAS: 2, DIKIRIM: 3 };
 
-let params = null;     // { id, token }
+let params = null;
 let pengaturan = {};
 let order = null;
 let lastRendered = '';
@@ -20,7 +20,6 @@ let busy = false;
 let timer = 0;
 let shown = false;
 
-/* ---------- Util ---------- */
 const toast = (msg) => showToast(msg, 2600);
 
 function readParams() {
@@ -29,11 +28,10 @@ function readParams() {
   if (!(id >= 1)) return null;
   let token = (q.get('t') || '').trim();
   if (!token) {
-    // Tanpa token di link: pakai token dari perangkat ini bila pesanan dibuat di sini.
     try {
       const saved = (JSON.parse(localStorage.getItem(ORDERS_KEY)) || []).find((o) => Number(o.id) === id);
       if (saved) token = String(saved.token || '');
-    } catch (e) { /* abaikan */ }
+    } catch (e) { }
   }
   return token ? { id, token } : null;
 }
@@ -45,7 +43,6 @@ function applySettings(p) {
   document.title = (order ? 'Pesanan #' + order.id + ' | ' : 'Pesanan | ') + nama;
 }
 
-/* ---------- Teks per status ---------- */
 function statusText(o) {
   const t = o.cara_terima;
   const s = o.status;
@@ -75,7 +72,6 @@ function stepLabels(o) {
   ];
 }
 
-/* ---------- Bagian halaman ---------- */
 function stepper(o) {
   const cur = STEP_INDEX[o.status];
   const cancelled = o.status === 'DIBATALKAN';
@@ -110,7 +106,6 @@ function qrisScreen(o) {
   );
 }
 
-// Layar bayar transfer bank: bank, nomor, atas nama, total, dan tombol salin nomor.
 async function salinNomor(nomor) {
   try {
     await navigator.clipboard.writeText(nomor.replace(/\D/g, ''));
@@ -137,12 +132,10 @@ function bankScreen(o) {
   );
 }
 
-// Semua metode bayar: QRIS dulu, lalu tiap bank dari pengaturan.rekening (kosong = hanya QRIS).
 function semuaMetode() {
   return ['QRIS'].concat(parseRekening(pengaturan.rekening).map((r) => r.bank));
 }
 
-// Satu tombol per metode. ganti=false: memilih pertama kali; ganti=true: mengganti metode yang sudah dipilih.
 function metodeButtons(daftar, ganti) {
   const btns = daftar.map((m) => {
     const label = ganti ? 'Ubah Metode Pembayaran ke ' + m : (m === 'QRIS' ? 'Bayar dengan QRIS' : 'Transfer ' + m);
@@ -170,7 +163,6 @@ function metodeButtons(daftar, ganti) {
   return btns;
 }
 
-// Tombol "Ganti metode bayar" di layar bayar (salah klik). Tidak ada bila tidak ada metode lain.
 function gantiMetode(o) {
   const lain = semuaMetode().filter((m) => m !== (o.cara_bayar || 'QRIS'));
   if (!lain.length) return null;
@@ -183,7 +175,6 @@ function gantiMetode(o) {
 }
 
 function statusPanel(o) {
-  // cara_bayar kosong = data lama sebelum ada pilihan bank: tetap QRIS.
   if (o.status === 'PEMBAYARAN' && o.cara_terima === 'antar') {
     const layar = !o.cara_bayar || o.cara_bayar === 'QRIS' ? qrisScreen(o) : bankScreen(o);
     const ganti = gantiMetode(o);
@@ -296,20 +287,16 @@ function contactButton(o) {
     : null;
 }
 
-/* ---------- Render ---------- */
 function render() {
   if (!order) return;
   const key = JSON.stringify([order, pengaturan.qris_url, pengaturan.rekening, pengaturan.wa_admin, pengaturan.alamat, pengaturan.nama_toko]);
   if (key === lastRendered) return;
   lastRendered = key;
 
-  // Animasi masuk hanya saat tampil pertama; render ulang karena polling tidak mengulangnya.
   $('view').classList.toggle('is-enter', !shown);
   shown = true;
   document.title = 'Pesanan #' + order.id + ' | ' + (pengaturan.nama_toko || 'DL BEAUTY');
   const cancelled = order.status === 'DIBATALKAN';
-  // replaceChildren(null) akan menulis teks "null"; kartu yang tidak ada dibuang dulu.
-  // Saat dicetak: hanya kepala invoice, cara terima, dan ringkasan. Sisanya diberi no-print.
   const noPrint = (el) => { if (el) el.classList.add('no-print'); return el; };
   $('view').replaceChildren(...[
     h('div', { class: 'print-only invoice-head' },
@@ -337,7 +324,6 @@ function renderProblem(msg, retry) {
   );
 }
 
-/* ---------- Polling ---------- */
 async function refresh() {
   if (busy || !params) return;
   try {
@@ -347,7 +333,6 @@ async function refresh() {
     render();
     if (FINAL.includes(order.status)) stopPolling();
   } catch (e) {
-    // Gagal sementara saat polling: biarkan data terakhir tetap tampil.
   }
 }
 
@@ -368,7 +353,6 @@ document.addEventListener('visibilitychange', () => {
   startPolling();
 });
 
-/* ---------- Mulai ---------- */
 async function init() {
   params = readParams();
   const cached = readCache();
@@ -379,7 +363,7 @@ async function init() {
     $('view').replaceChildren(...skPesanan());
     const [ord, boot] = await Promise.allSettled([getOrder(params.id, params.token), fetchBootstrap()]);
     if (boot.status === 'fulfilled') { pengaturan = boot.value.pengaturan || {}; applySettings(pengaturan); }
-    else if (!cached) applySettings({}); // gagal dan tanpa cache: baru pakai logo bawaan
+    else if (!cached) applySettings({});
     if (ord.status === 'rejected') {
       renderProblem((ord.reason && ord.reason.message) || 'Pesanan belum bisa dimuat.', load);
       return;

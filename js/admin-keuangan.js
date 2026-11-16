@@ -1,6 +1,3 @@
-// Panel admin Tahap 7: Keuangan dan Ulasan.
-// Dimuat oleh admin.js. Setiap kali tab dibuka, data diminta ulang dari server (data
-// lama tetap tampil selagi memuat), supaya angka selalu sama dengan sheet.
 import { h, rupiah, stars, tanggal } from './util.js';
 import { adminFinance, adminAddExpense, adminReviews, adminDeleteReview } from './admin-api.js';
 import { setLoading, setBar, barFull, closeDialog } from './ui.js';
@@ -8,7 +5,6 @@ import { skKeuangan, skUlasan } from './skeleton.js';
 
 const CARA_LABEL = { antar: 'Antar', ambil: 'Ambil', cod: 'COD' };
 
-// Uang bisa negatif (laba rugi): tanda minus di depan "Rp".
 const uang = (n) => (n < 0 ? '-' + rupiah(-n) : rupiah(n));
 
 function dayLabel(key) {
@@ -25,7 +21,6 @@ function newReqId() {
   return (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()) + '-' + Math.random().toString(16).slice(2);
 }
 
-// ctx: { panels:{keuangan, ulasan}, formDialog, toast, confirmDialog, handleAuth }
 export function mountKeuangan(ctx) {
   const { panels, formDialog, toast, confirmDialog, handleAuth } = ctx;
   let fin = null;
@@ -35,7 +30,6 @@ export function mountKeuangan(ctx) {
   let alive = true;
   let busy = false;
 
-  /* ---------- Keuangan ---------- */
   function statCard(label, val, neg) {
     return h('div', { class: 'stat' }, h('span', { class: 'stat-label' }, label),
       h('strong', { class: 'stat-val' + (neg ? ' is-neg' : '') }, val));
@@ -161,7 +155,6 @@ export function mountKeuangan(ctx) {
     jumlah.focus();
   }
 
-  /* ---------- Ulasan ---------- */
   function ulasanCard(u) {
     return h('article', { class: 'rcard' },
       h('div', { class: 'ocard-head' },
@@ -186,7 +179,6 @@ export function mountKeuangan(ctx) {
         : h('p', { class: 'empty' }, 'Belum ada ulasan. Pelanggan bisa menulis ulasan dari halaman pesanan setelah pesanannya selesai.'),
       dipotong ? h('p', { class: 'muted' }, 'Menampilkan ' + rev.daftar.length + ' ulasan terbaru dari ' + rev.jumlah + '.') : null
     ];
-    // replaceChildren() asli menulis "null" sebagai teks, jadi buang yang kosong dulu.
     panels.ulasan.replaceChildren(...bagian.filter(Boolean));
   }
 
@@ -235,7 +227,6 @@ export function mountKeuangan(ctx) {
   }
 
   return {
-    // Dipanggil tiap tab Keuangan / Ulasan dipilih (dan tiap polling saat tab Keuangan terbuka).
     show(id) {
       if (id === 'keuangan') loadFin();
       else if (id === 'ulasan') loadRev();
