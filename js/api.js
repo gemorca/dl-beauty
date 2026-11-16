@@ -26,7 +26,8 @@ const DEMO = {
     { id: 'D3', nama: 'Body Booster Travel Size', harga: 35000, kategori: 'body booster', deskripsi: '', foto: '', habis: true },
     { id: 'D4', nama: 'Paket Duo Body Booster', harga: 140000, kategori: 'paket hemat', deskripsi: '', foto: '', habis: false }
   ],
-  ulasan: { jumlah: 1, rata: 5, daftar: [{ id: 'U1', nama: 'Contoh', bintang: 5, komentar: 'Cepat meresap, tidak lengket.', waktu: '2026-11-06T10:00:00Z' }] }
+  ulasan: { jumlah: 1, rata: 5, daftar: [{ id: 'U1', nama: 'Contoh', bintang: 5, komentar: 'Cepat meresap, tidak lengket.', waktu: '2026-11-06T10:00:00Z',
+    items: [{ nama: 'Body Booster Whitening Dosting', jumlah: 1 }] }] }
 };
 
 export function readCache() {

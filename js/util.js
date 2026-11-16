@@ -38,6 +38,14 @@ export function stars(n) {
   return '\u2605'.repeat(v) + '\u2606'.repeat(5 - v);
 }
 
+export function itemsEl(items) {
+  const txt = (Array.isArray(items) ? items : [])
+    .filter((it) => it && it.nama)
+    .map((it) => it.nama + (it.jumlah > 1 ? ' \u00d7' + it.jumlah : ''))
+    .join(', ');
+  return txt ? h('p', { class: 'review-items' }, 'Membeli: ' + txt) : null;
+}
+
 export function tanggal(iso) {
   const d = new Date(iso);
   return isNaN(d) ? '' : d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });

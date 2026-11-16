@@ -1,5 +1,5 @@
 import { fetchBootstrap, readCache } from './api.js';
-import { h, rupiah, waLink, slug, stars, tanggal, fotoUrl, shimmerOnLoad, setImg, LOGO_DEFAULT, BANNER_DEFAULT } from './util.js';
+import { h, rupiah, waLink, slug, stars, tanggal, itemsEl, fotoUrl, shimmerOnLoad, setImg, LOGO_DEFAULT, BANNER_DEFAULT } from './util.js';
 import { cart, MAX_QTY } from './cart.js';
 import { initCheckout, setCheckoutData, openCheckout } from './checkout.js';
 import { openRiwayat } from './riwayat.js';
@@ -145,6 +145,7 @@ function reviewSection(u) {
           h('span', { class: 'stars', role: 'img', 'aria-label': r.bintang + ' bintang' }, stars(r.bintang))
         ),
         h('p', { class: 'review-date' }, tanggal(r.waktu)),
+        itemsEl(r.items),
         r.komentar ? h('p', { class: 'review-text' }, r.komentar) : null
       )
     ))

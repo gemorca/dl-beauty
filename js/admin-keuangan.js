@@ -1,4 +1,4 @@
-import { h, rupiah, stars, tanggal } from './util.js';
+import { h, rupiah, stars, tanggal, itemsEl } from './util.js';
 import { adminFinance, adminAddExpense, adminReviews, adminDeleteReview } from './admin-api.js';
 import { setLoading, setBar, barFull, closeDialog } from './ui.js';
 import { skKeuangan, skUlasan } from './skeleton.js';
@@ -161,6 +161,7 @@ export function mountKeuangan(ctx) {
         h('strong', null, u.nama || 'Pelanggan'),
         h('span', { class: 'ocard-time' }, tanggal(u.waktu))),
       h('p', { class: 'rcard-stars', role: 'img', 'aria-label': u.bintang + ' dari 5 bintang' }, stars(u.bintang)),
+      itemsEl(u.items),
       u.komentar ? h('p', { class: 'rcard-text' }, u.komentar) : h('p', { class: 'muted' }, 'Tanpa komentar.'),
       h('div', { class: 'rcard-foot' },
         h('span', { class: 'tag' }, u.pesanan_id ? 'Pesanan #' + u.pesanan_id : 'Tanpa nomor pesanan'),
